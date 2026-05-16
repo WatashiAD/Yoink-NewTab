@@ -1,6 +1,6 @@
 # The Yoink NewTab 🐱🥁
 
-A premium, glassmorphism-inspired dashboard page featuring a sleek Catppuccin theme and a drumming Bongo Cat companion. Simply open the `catppuccin-newtab.html` file in your browser to use it!
+A premium, glassmorphism-inspired dashboard page featuring a sleek Catppuccin theme and a drumming Bongo Cat companion. Simply open the `yoink-newtab.html` file in your browser to use it!
 
 ![Bongo Cat](bongo-cat.gif)
 
@@ -15,7 +15,7 @@ A premium, glassmorphism-inspired dashboard page featuring a sleek Catppuccin th
 
 Since this is a standalone HTML file rather than a packaged extension, you have a few ways to use it:
 
-1. **Directly in Browser**: Double-click `catppuccin-newtab.html` to open it as a local file in any modern browser.
+1. **Directly in Browser**: Double-click `yoink-newtab.html` to open it as a local file in any modern browser.
 2. **As a Homepage**: Go to your browser settings and set the local file path as your homepage or startup page.
 3. **With an Extension**: Use a "Custom New Tab" extension to point your new tabs directly to your local file path. 
    - **Chrome / Edge / Brave**: Use [Custom New Tab URL](https://chromewebstore.google.com/detail/custom-new-tab/lfjnnkckddkopjfgmbcpdiolnmfobflj).
