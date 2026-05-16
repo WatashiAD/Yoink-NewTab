@@ -8,8 +8,9 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rubik:wght@300;400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
     rel="stylesheet">
-  <link rel="icon" type="image/gif" href="bongo-cat.gif">
-  <script src="https://cdn.jsdelivr.net/npm/ogl@1.0.11/dist/ogl.umd.min.js"></script>
+  <link rel="icon" type="image/gif" href="https://media.tenor.com/DZKcXvpu-d8AAAAi/bongo-cat-cute.gif">
+  <script src="https://cdn.jsdelivr.net/npm/localforage/dist/localforage.min.js"></script>
+
   <style>
     html,
     body {
@@ -94,6 +95,8 @@
       --acc: #cba6f7;
       --glass-bg: rgba(30, 30, 46, 0.15);
       --glass-hover: rgba(49, 50, 68, 0.25);
+      --tile-bg: rgba(30,30,46,0.55);
+      --tile-hover: rgba(49,50,68,0.65);
       --glass-border: rgba(205, 214, 244, 0.08);
       --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       --blur-amount: 16px;
@@ -102,8 +105,8 @@
       --bg-url: none;
       --weather-color: #f9e2af;
       --pomo-color: #fab387;
+      --clock-color: #cdd6f4;
     }
-
     .root {
       width: 100%;
       min-height: 100vh;
@@ -111,8 +114,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: clamp(10px, 2vh, 40px) clamp(16px, 4vw, 40px);
-      gap: clamp(10px, 2vh, 24px);
+      padding: min(30px, 4vh) min(24px, 4vw);
+      gap: clamp(8px, 2.5vh, 20px);
       font-family: 'Rubik', sans-serif;
       position: relative;
       z-index: 10;
@@ -124,8 +127,8 @@
         min-height: 100vh;
         height: auto;
         justify-content: flex-start;
-        padding: clamp(30px, 5vh, 60px) clamp(16px, 4vw, 32px);
-        gap: clamp(16px, 3.5vh, 32px);
+        padding: 40px 16px 60px;
+        gap: 20px;
       }
     }
 
@@ -202,7 +205,9 @@
       right: -340px;
       width: min(340px, 85vw);
       height: 100vh;
-      background: var(--glass-bg);
+      background: rgba(30, 30, 46, 0.65);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border-left: 1px solid var(--glass-border);
       box-shadow: -10px 0 40px rgba(0, 0, 0, 0.3);
       z-index: 9999;
@@ -267,30 +272,6 @@
       display: block;
     }
 
-    .accent-grid {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .accent-dot {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all .2s;
-    }
-
-    .accent-dot:hover {
-      transform: scale(1.15);
-    }
-
-    .accent-dot.active {
-      border-color: var(--tx);
-      box-shadow: 0 0 12px currentColor;
-    }
-
     #bg-image-layer {
       position: fixed;
       inset: 0;
@@ -307,6 +288,31 @@
 
     #bg-image-layer.visible {
       display: block;
+    }
+
+    #bg-video-layer {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      transition: opacity 0.5s ease;
+      transform: scale(1.05);
+      pointer-events: none;
+    }
+
+    #wallpaperGallery::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #wallpaperGallery::-webkit-scrollbar-thumb {
+      background: var(--s1);
+      border-radius: 4px;
+    }
+
+    #wallpaperGallery {
+      scrollbar-width: thin;
+      scrollbar-color: var(--s1) transparent;
     }
 
     .bg-grainient {
@@ -373,6 +379,7 @@
       text-transform: uppercase;
       background: linear-gradient(90deg, var(--sub0), var(--tx));
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 4px;
     }
@@ -383,7 +390,7 @@
 
     .clock-time {
       font-family: 'Rubik', sans-serif;
-      font-size: clamp(32px, min(8vw, 12vh), 64px);
+      font-size: clamp(40px, 10vw, 72px);
       font-weight: 700;
       letter-spacing: -2px;
       line-height: 1;
@@ -394,7 +401,7 @@
     }
 
     .clock-time span {
-      color: inherit;
+      color: var(--clock-color);
       text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
@@ -407,8 +414,7 @@
     }
 
     .header-right {
-      width: clamp(60px, 12vw, 100px);
-      margin-top: -10px;
+      width: clamp(100px, 20vw, 150px);
     }
 
     .header-right img {
@@ -427,31 +433,31 @@
     .search-pill {
       display: flex;
       align-items: center;
-      background: var(--glass-bg);
+      background: var(--tile-bg);
       border: var(--border-width) solid var(--glass-border);
       box-shadow: var(--glass-shadow);
       border-radius: var(--tile-radius);
-      height: clamp(38px, 6vh, 52px);
+      height: clamp(44px, 8vh, 58px);
       padding: 0 clamp(8px, 2vw, 12px) 0 clamp(16px, 4vw, 24px);
       gap: clamp(8px, 2vw, 14px);
       transition: all .3s cubic-bezier(.4, 0, .2, 1);
     }
 
     .search-pill:hover {
-      background: var(--glass-hover);
+      background: var(--tile-hover);
       transform: translateY(-2px);
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
     }
 
     .search-pill:focus-within {
       border-color: var(--acc);
-      background: var(--glass-hover);
+      background: var(--tile-hover);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 15%, transparent), 0 12px 40px rgba(0, 0, 0, 0.3);
       transform: translateY(-2px);
     }
 
     .search-pill>.ms {
-      color: white;
+      color: var(--ov0);
     }
 
     .search-pill input {
@@ -640,7 +646,7 @@
       aspect-ratio: 1 / 1;
       gap: 8px;
       padding: 10px;
-      background: var(--glass-bg);
+      background: var(--tile-bg);
       border: var(--border-width) solid var(--glass-border);
       border-radius: var(--tile-radius);
       box-shadow: var(--glass-shadow);
@@ -650,30 +656,30 @@
     }
 
     .shortcut:hover {
-      background: var(--glass-hover);
+      background: var(--tile-hover);
       transform: translateY(-5px);
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
       border-color: var(--acc);
     }
 
     .sc-icon {
-      width: clamp(32px, 6vw, 44px);
-      height: clamp(32px, 6vw, 44px);
-      border-radius: 12px;
+      width: clamp(40px, 8vw, 52px);
+      height: clamp(40px, 8vw, 52px);
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .sc-icon .ms {
-      font-size: 22px;
+      font-size: 26px;
       line-height: 1;
       display: block;
     }
 
     .sc-icon svg {
-      width: 22px;
-      height: 22px;
+      width: 26px;
+      height: 26px;
       display: block;
     }
 
@@ -687,7 +693,7 @@
 
     .widgets-row {
       display: flex;
-      gap: clamp(10px, 2vw, 20px);
+      gap: 16px;
       width: 100%;
       max-width: min(850px, 95vw);
       flex-wrap: wrap;
@@ -698,14 +704,34 @@
 
     @media(max-width: 1200px) {
       .widgets-row {
-        gap: 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 12px;
+        width: 100%;
+        max-width: 100%;
       }
+
       .widgets-row .wcard {
-        flex: 1 1 calc(50% - 16px) !important;
-        min-width: 200px !important;
+        flex: unset !important;
+        min-width: 0 !important;
         width: auto !important;
       }
-      .widgets-row .wcard:nth-child(2) { flex: 1 1 100% !important; }
+
+      .widgets-row .wcard:nth-child(1) {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .widgets-row .wcard:nth-child(2) {
+        grid-column: 1 / -1;
+        grid-row: 2;
+      }
+
+      .widgets-row .wcard:nth-child(3) {
+        grid-column: 2;
+        grid-row: 1;
+      }
 
       .topbar {
         position: absolute;
@@ -722,7 +748,7 @@
     }
 
     .wcard {
-      background: var(--glass-bg);
+      background: var(--tile-bg);
       border: var(--border-width) solid var(--glass-border);
       border-radius: var(--tile-radius);
       box-shadow: var(--glass-shadow);
@@ -734,7 +760,7 @@
     }
 
     .wcard:hover {
-      background: var(--glass-hover);
+      background: var(--tile-hover);
       transform: translateY(-3px);
       border-color: var(--acc);
     }
@@ -849,6 +875,16 @@
       background: color-mix(in srgb, var(--red) 10%, transparent);
     }
 
+    .pbtn.danger {
+      border-color: var(--red);
+      color: var(--red);
+      background: rgba(243, 139, 168, 0.15);
+    }
+    .pbtn.danger:hover {
+      background: rgba(243, 139, 168, 0.28);
+      transform: translateY(-1px);
+    }
+
     .pbtn.run {
       background: var(--pch);
       color: var(--crust);
@@ -859,7 +895,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      background: var(--glass-bg);
+      background: var(--tile-bg);
       border: var(--border-width) solid var(--glass-border);
       border-radius: 16px;
       padding: 8px 16px;
@@ -1014,7 +1050,7 @@
       width: 22px;
       height: 22px;
       background: var(--red);
-      color: #fff;
+      color: var(--crust);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -1055,7 +1091,7 @@
 
     .ts-del:hover {
       background: var(--red);
-      color: #fff;
+      color: var(--crust);
       opacity: 1;
       transform: scale(1.1);
       box-shadow: 0 2px 8px rgba(243, 139, 168, 0.3);
@@ -1076,180 +1112,113 @@
         transform: translateY(0) scale(1);
       }
     }
-
-    /* Wallpaper Stack Manager */
-    .wp-stack-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .wp-thumb {
+    .cp-wrap {
       position: relative;
-      aspect-ratio: 16 / 9;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 2px solid transparent;
-      cursor: default;
-      transition: border-color 0.2s, transform 0.2s;
-      background: var(--s0);
     }
-
-    .wp-thumb.is-active {
-      border-color: var(--acc);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 30%, transparent);
-    }
-
-    .wp-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .wp-thumb-del {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      width: 20px;
-      height: 20px;
-      background: rgba(17, 17, 27, 0.75);
-      border: none;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Material Symbols Rounded';
-      font-size: 13px;
-      color: var(--red);
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.2s, background 0.2s;
-      font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
-      line-height: 1;
-      padding: 0;
-    }
-
-    .wp-thumb:hover .wp-thumb-del {
-      opacity: 1;
-    }
-
-    .wp-thumb-del:hover {
-      background: var(--red);
-      color: #fff;
-    }
-
-    .wp-active-badge {
-      position: absolute;
-      bottom: 4px;
-      left: 4px;
-      background: var(--acc);
-      color: var(--crust);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      border-radius: 5px;
-      padding: 2px 5px;
-      font-family: 'Rubik', sans-serif;
-      pointer-events: none;
-    }
-
-    .wp-add-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-      align-items: center;
-    }
-
-    .wp-url-input {
-      flex: 1;
-      background: rgba(17, 17, 27, 0.5);
-      border: var(--border-width) solid var(--s1);
-      border-radius: 10px;
+    .cp-trigger {
+      display: flex; align-items: center; gap: 10px;
       padding: 8px 12px;
-      color: var(--tx);
-      outline: none;
-      font-size: 12px;
+      background: rgba(17,17,27,0.5);
+      border: var(--border-width) solid var(--glass-border);
+      border-radius: 10px; cursor: pointer;
+      transition: all .2s; user-select: none;
+    }
+    .cp-trigger:hover { border-color: var(--acc); background: var(--glass-hover); }
+    .cp-preview {
+      width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .cp-hex {
+      font-size: 13px; font-weight: 500; color: var(--tx);
+      font-family: 'Rubik', sans-serif; flex: 1; letter-spacing: 0.3px;
+    }
+    .cp-arrow { font-size: 18px; color: var(--ov0); transition: transform .3s; }
+    .cp-arrow.open { transform: rotate(180deg); }
+    .cp-drop {
+      display: none; padding: 14px;
+      background: rgba(17,17,27,0.85);
+      border: var(--border-width) solid var(--glass-border);
+      border-radius: 12px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      animation: cpIn .2s ease;
+      position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 50;
+    }
+    .cp-drop.open { display: block; }
+    @keyframes cpIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .cp-sv {
+      width: 100%; aspect-ratio: 1; border-radius: 8px;
+      overflow: hidden; position: relative; cursor: crosshair;
+      margin-bottom: 12px;
+    }
+    .cp-sv-bg { width: 100%; height: 100%; position: relative; }
+    .cp-sv-white {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, #fff, transparent);
+    }
+    .cp-sv-black {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, #000, transparent);
+    }
+    .cp-sv-handle {
+      position: absolute; width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 6px rgba(0,0,0,0.4);
+      transform: translate(-50%, -50%);
+      pointer-events: none; z-index: 2;
+    }
+    .cp-hue {
+      width: 100%; height: 16px; border-radius: 8px;
+      position: relative; cursor: pointer; margin-bottom: 12px;
+    }
+    .cp-hue-track {
+      width: 100%; height: 100%; border-radius: 8px;
+      background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+      position: relative;
+    }
+    .cp-hue-handle {
+      position: absolute; top: 50%; width: 18px; height: 18px;
+      border-radius: 50%; border: 2px solid #fff;
+      box-shadow: 0 0 6px rgba(0,0,0,0.4);
+      transform: translate(-50%, -50%);
+      pointer-events: none; z-index: 2;
+    }
+    .cp-row {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 12px;
+    }
+    .cp-row span {
+      font-size: 14px; font-weight: 600; color: var(--ov0);
       font-family: 'Rubik', sans-serif;
     }
-
-    .wp-url-input::placeholder {
-      color: var(--ov0);
-    }
-
-    .wp-add-btn {
-      background: var(--acc);
-      border: none;
-      border-radius: 10px;
-      width: 34px;
-      height: 34px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: filter 0.2s, transform 0.2s;
-      font-family: 'Material Symbols Rounded';
-      font-size: 20px;
-      color: var(--crust);
-      font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
-      line-height: 1;
-    }
-
-    .wp-add-btn:hover {
-      filter: brightness(1.12);
-      transform: scale(1.06);
-    }
-
-    .wp-upload-label {
-      background: rgba(17, 17, 27, 0.5);
+    .cp-input {
+      flex: 1; background: rgba(0,0,0,0.3);
       border: var(--border-width) solid var(--s1);
-      border-radius: 10px;
-      width: 34px;
-      height: 34px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: border-color 0.2s, background 0.2s;
-      font-family: 'Material Symbols Rounded';
-      font-size: 20px;
-      color: var(--sub1);
-      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      line-height: 1;
+      border-radius: 8px; padding: 8px 10px;
+      color: var(--tx); font-size: 13px; outline: none;
+      letter-spacing: 0.5px; text-transform: uppercase;
     }
-
-    .wp-upload-label:hover {
-      border-color: var(--acc);
-      background: var(--s0);
+    .cp-input:focus { border-color: var(--acc); }
+    .cp-swatches {
+      display: flex; gap: 6px; flex-wrap: wrap;
     }
-
-    .wp-empty {
-      font-size: 12px;
-      color: var(--ov0);
-      text-align: center;
-      padding: 14px 0;
-      font-style: italic;
+    .cp-swatch {
+      width: 24px; height: 24px; border-radius: 6px; cursor: pointer;
+      border: 2px solid transparent; transition: all .2s; flex-shrink: 0;
     }
-
-    .wp-info {
-      font-size: 11px;
-      color: var(--ov1);
-      margin-top: 8px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
+    .cp-swatch:hover { transform: scale(1.2); }
+    .cp-swatch.active { border-color: var(--tx); }
   </style>
 </head>
 
 <body>
 
   <div id="grainient-container" class="bg-grainient"></div>
-  <div id="bg-image-layer"></div>
+  <div id="bg-image-layer" class="bg-layer" style="opacity: 0;"></div>
+  <video id="bg-video-layer" class="bg-layer" autoplay loop muted playsinline
+    style="opacity: 0; display: none; object-fit: cover;"></video>
   <div id="bg-vignette"></div>
 
   <div class="root">
@@ -1302,7 +1271,7 @@
         </div>
       </div>
       <div class="header-right">
-        <img src="bongo-cat.gif" alt="Bongo Cat" id="bongo-cat" />
+        <img src="https://media.tenor.com/DZKcXvpu-d8AAAAi/bongo-cat-cute.gif" alt="Bongo Cat" id="bongo-cat" />
       </div>
     </div>
 
@@ -1378,7 +1347,7 @@
         <div style="flex:1; overflow:hidden; width: 100%;">
           <div id="pomo-track"
             style="display:flex; width:200%; height:100%; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
-            <div id="pomo-view" style="width:50%; display:flex; flex-direction:column; justify-content:center;">
+            <div id="pomo-view" style="width:50%; display:flex; flex-direction:column; justify-content:flex-end;">
               <div style="font-size:12px;font-weight:400;color:var(--ov1);text-align:center;margin-bottom:4px;"
                 id="plbl">
                 Focus session</div>
@@ -1414,7 +1383,7 @@
               </div>
             </div>
 
-            <div id="timer-view" style="width:50%; display:flex; flex-direction:column; justify-content:center;">
+            <div id="timer-view" style="width:50%; display:flex; flex-direction:column; justify-content:flex-end;">
               <div style="font-size:12px;font-weight:400;color:var(--ov1);text-align:center;margin-bottom:4px;">
                 Stopwatch</div>
               <div class="pomo-num" id="ttime">
@@ -1476,18 +1445,7 @@
 
     <div class="setting-item">
       <div class="setting-label">Accent Color</div>
-      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-        <div style="position:relative; width:40px; height:40px; flex-shrink:0;">
-          <input type="color" id="customColor"
-            style="position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:2;">
-          <div id="customColorCircle"
-            style="width:100%; height:100%; border-radius:12px; background:linear-gradient(135deg, var(--acc), #89b4fa); border:1px solid var(--glass-border); display:flex; align-items:center; justify-content:center; box-shadow:var(--glass-shadow); transition:all 0.3s ease;">
-            <span class="ms"
-              style="font-size:18px; color:var(--crust); text-shadow:0 0 8px rgba(0,0,0,0.2);">brush</span>
-          </div>
-        </div>
-        <div class="accent-grid" id="setAccent" style="flex:1;"></div>
-      </div>
+      <div id="accentPicker"></div>
     </div>
 
     <div class="setting-item">
@@ -1501,7 +1459,6 @@
       <input type="range" id="brightSlider" min="0" max="100" value="80" style="width:100%;accent-color:var(--acc);">
       <div class="slider-labels"><span>Dark</span><span>Bright</span></div>
     </div>
-
 
     <div class="setting-item">
       <div class="setting-label">Vignette</div>
@@ -1526,6 +1483,12 @@
       <input type="range" id="borderWidthSlider" min="0" max="5" value="1" step="1"
         style="width:100%;accent-color:var(--acc);">
       <div class="slider-labels"><span>Thin</span><span>Thick</span></div>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-label">Tile Opacity</div>
+      <input type="range" id="tileOpacitySlider" min="10" max="90" value="55" style="width:100%;accent-color:var(--acc);">
+      <div class="slider-labels"><span>Light</span><span>Opaque</span></div>
     </div>
 
     <div class="setting-item">
@@ -1567,32 +1530,38 @@
       <div class="setting-label">Background Style</div>
       <div style="display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;gap:8px;">
-          <button class="pbtn set-bg" data-style="gradient" style="flex:1;">Gradient</button>
+          <button class="pbtn set-bg" data-style="solid" style="flex:1;">Solid</button>
+          <button class="pbtn set-bg" data-style="gradient" style="flex:1;">Dynamic</button>
           <button class="pbtn set-bg" data-style="wave" style="flex:1;">Wave</button>
-          <button class="pbtn set-bg" data-style="image" style="flex:1;">Image</button>
+          <button class="pbtn set-bg" data-style="image" style="flex:1;">Media</button>
         </div>
-
-        <!-- Add wallpaper row: always visible so user never has to click Image first -->
-        <div class="wp-add-row" id="wpAddRowAlways">
-          <input class="wp-url-input" id="wpUrlInput" placeholder="Paste image URL…" />
-          <button class="wp-add-btn" id="wpAddUrl" title="Add URL">add</button>
-          <label class="wp-upload-label" title="Upload image">
-            cloud_upload
-            <input type="file" id="wpFileInput" accept="image/*" style="display:none;" multiple>
-          </label>
-        </div>
-
-        <!-- Wallpaper thumbnail grid – shown only in image mode -->
-        <div id="wpStackSection" style="display:none;">
-          <div class="wp-stack-grid" id="wpGrid"></div>
-          <div class="wp-info">
-            <span class="ms" style="font-size:14px;">shuffle</span>
-            A random wallpaper is shown each time you open a new tab.
+        <div id="mediaControlsContainer" style="display:none; flex-direction:column; gap:12px; margin-top:12px;">
+          <div style="display:flex;gap:8px; align-items:center;">
+            <input type="text" id="bgUrlInput" placeholder="Paste image/video URL…"
+              style="flex:1;background:rgba(17,17,27,0.5);border:var(--border-width) solid var(--s1);border-radius:12px;padding:10px 14px;color:var(--tx);outline:none;font-size:12px;">
+            <button class="pbtn" id="addMediaUrlBtn" style="padding:10px; flex-shrink:0;"><span class="ms"
+                style="font-size:18px;">add</span></button>
+            <label id="bgUploadLabel"
+              style="cursor:pointer; background:var(--acc); border:var(--border-width) solid var(--s1); border-radius:12px; padding:10px; color:var(--crust); transition:all .2s; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <span class="ms msf" style="font-size:18px;">cloud_upload</span>
+              <input type="file" id="bgFileInput" accept="image/*,video/*" style="display:none;">
+            </label>
+          </div>
+          <div id="wallpaperGallery"
+            style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; max-height:200px; overflow-y:auto; padding-right:4px;">
           </div>
         </div>
-        <!-- Legacy hidden inputs kept for compat -->
-        <input type="text" id="bgUrlInput" style="display:none;">
-        <label id="bgUploadLabel" style="display:none;"><input type="file" id="bgFileInput" accept="image/*" style="display:none;"></label>
+      </div>
+    </div>
+
+      <div id="bgColorSelectors" style="display:none;flex-direction:column;gap:14px;margin-top:12px;">
+      <div>
+        <div style="font-size:11px;color:var(--ov0);margin-bottom:4px;">Color 1</div>
+        <div id="bgColorPicker1"></div>
+      </div>
+      <div id="bgColorPicker2Container">
+        <div style="font-size:11px;color:var(--ov0);margin-bottom:4px;">Color 2</div>
+        <div id="bgColorPicker2"></div>
       </div>
     </div>
 
@@ -1600,7 +1569,7 @@
 
     <div class="setting-item" id="addShortcutSection"
       style="display:none; border-top:1px solid var(--glass-border); padding-top:20px;">
-      <div class="setting-label">Pin a Shortcut</div>
+      <div class="setting-label" id="scLabel">Pin a Shortcut</div>
       <input
         style="background:rgba(17,17,27,0.5);border:var(--border-width) solid var(--s1);border-radius:12px;padding:10px 14px;color:var(--tx);outline:none;width:100%;margin-bottom:12px;font-size:14px;"
         id="m-name" placeholder="Name (e.g. Notion)" />
@@ -1616,9 +1585,12 @@
       </div>
     </div>
 
-    <div style="margin-top:auto;padding-top:20px;border-top:1px solid var(--glass-border);display:flex;gap:10px;">
-      <button class="pbtn" id="resetAll" style="flex:1;">Reset</button>
+    <div style="margin-top:auto;padding-top:20px;display:flex;gap:10px;">
+      <button class="pbtn" id="exportBtn" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;"><span class="ms" style="font-size:18px;">download</span> Export</button>
+      <button class="pbtn" id="importBtn" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;"><span class="ms" style="font-size:18px;">upload</span> Import</button>
+      <button class="pbtn danger" id="resetAll" style="flex:1;gap:6px;"><span class="ms" style="font-size:18px;">restart_alt</span> Reset</button>
     </div>
+    <input type="file" id="importFile" accept=".json" style="display:none;">
   </div>
 
 
@@ -1634,10 +1606,10 @@
     const DEFAULT_POMO_COLOR = '#fab387';
     const DEFAULT_WEATHER_ICON = 'partly_cloudy_day';
     const DEFAULT_POMO_ICON = 'timer';
-    const DEFAULT_BLUR = 24;
-    const DEFAULT_RADIUS = 24;
-    const DEFAULT_BORDER = 0;
-    const DEFAULT_BORDER_WIDTH = 0;
+    const DEFAULT_BLUR = 16;
+    const DEFAULT_RADIUS = 20;
+    const DEFAULT_BORDER = 8;
+    const DEFAULT_BORDER_WIDTH = 1;
     const DEFAULT_BG = 'gradient';
 
     let shortcuts = JSON.parse(localStorage.getItem('nt-shcuts')) || DEFAULT_SHORTCUTS;
@@ -1652,16 +1624,26 @@
     let tileRadius = parseInt(localStorage.getItem('nt-radius')) || DEFAULT_RADIUS;
     let borderAmt = parseInt(localStorage.getItem('nt-border')) || DEFAULT_BORDER;
     let borderWidth = parseInt(localStorage.getItem('nt-border-w')) || DEFAULT_BORDER_WIDTH;
+    let tileOpacity = parseInt(localStorage.getItem('nt-tile-op')) || 55;
     let bgStyle = localStorage.getItem('nt-bg') || DEFAULT_BG;
     let bgUrl = localStorage.getItem('nt-bg-url') || '';
-    let bgWallpapers = []; // Loaded async from IndexedDB
-    let activeBgUrl = '';
+    let wallpapers = [];
+    let activeWallpaperId = localStorage.getItem('nt-active-wp') || null;
     let clock24h = localStorage.getItem('nt-24h') === 'true';
     let clockShowSec = localStorage.getItem('nt-sec') === 'true';
     let weatherUnit = localStorage.getItem('nt-w-unit') || 'C';
     let brightAmt = parseInt(localStorage.getItem('nt-bright')) || 80;
     let vignetteAmt = parseInt(localStorage.getItem('nt-vignette')) || 40;
     let syncShortcuts = localStorage.getItem('nt-sync-sc') === 'true';
+    document.documentElement.setAttribute('data-theme', 'dark');
+    let bgColor1, bgColor2;
+    function loadBgColors(style) {
+      if (style === 'solid') { bgColor1 = localStorage.getItem('nt-bg-solid') || '#313244'; bgColor2 = '#15b8d0'; }
+      else if (style === 'gradient') { bgColor1 = localStorage.getItem('nt-bg-grad-c1') || '#7950f2'; bgColor2 = localStorage.getItem('nt-bg-grad-c2') || '#15b8d0'; }
+      else if (style === 'wave') { bgColor1 = localStorage.getItem('nt-bg-wave-c1') || '#7950f2'; bgColor2 = localStorage.getItem('nt-bg-wave-c2') || '#15b8d0'; }
+      else { bgColor1 = '#7950f2'; bgColor2 = '#15b8d0'; }
+    }
+    loadBgColors(bgStyle);
 
     function saveShortcuts() { localStorage.setItem('nt-shcuts', JSON.stringify(shortcuts)); }
     function saveTasks() { localStorage.setItem('nt-tasks', JSON.stringify(tasks)); }
@@ -1676,111 +1658,42 @@
     function saveBorder() { localStorage.setItem('nt-border', borderAmt); }
     function saveBg() { localStorage.setItem('nt-bg', bgStyle); }
     function saveBgUrl() { localStorage.setItem('nt-bg-url', bgUrl); }
+    function saveWallpapers() { if (typeof localforage !== 'undefined') localforage.setItem('nt-wallpapers', wallpapers); localStorage.setItem('nt-active-wp', activeWallpaperId || ''); }
     function saveClock24h() { localStorage.setItem('nt-24h', clock24h); }
     function saveClockSec() { localStorage.setItem('nt-sec', clockShowSec); }
     function saveWeatherUnit() { localStorage.setItem('nt-w-unit', weatherUnit); }
     function saveBright() { localStorage.setItem('nt-bright', brightAmt); }
     function saveVignette() { localStorage.setItem('nt-vignette', vignetteAmt); }
-    function saveBorderWidth() { localStorage.setItem('nt-border-w', borderWidth); }
-
-    // ─── IndexedDB for wallpapers (no size limit, works with large photos) ───
-    const _WP_DB = 'nt-wp-db', _WP_ST = 'wallpapers';
-    let _wpDb = null;
-    function wpOpenDb() {
-      if (_wpDb) return Promise.resolve(_wpDb);
-      return new Promise((res, rej) => {
-        const r = indexedDB.open(_WP_DB, 1);
-        r.onupgradeneeded = e => e.target.result.createObjectStore(_WP_ST, { keyPath: 'k' });
-        r.onsuccess = e => { _wpDb = e.target.result; res(_wpDb); };
-        r.onerror = () => rej(r.error);
-      });
+    function saveTileOpacity() { localStorage.setItem('nt-tile-op', tileOpacity); }
+    function applyTileStyle() {
+      const op = tileOpacity / 100;
+      document.documentElement.style.setProperty('--tile-bg', `rgba(30,30,46,${op})`);
+      document.documentElement.style.setProperty('--tile-hover', `rgba(49,50,68,${Math.min(op + 0.1, 0.95)})`);
     }
-    function wpDbLoad() {
-      return wpOpenDb().then(db => new Promise((res, rej) => {
-        const r = db.transaction(_WP_ST).objectStore(_WP_ST).getAll();
-        r.onsuccess = () => res(r.result.sort((a, b) => a.k - b.k).map(x => x.url));
-        r.onerror = () => rej(r.error);
-      }));
+    function saveBgColors(style) {
+      const s = style || bgStyle;
+      if (s === 'solid') localStorage.setItem('nt-bg-solid', bgColor1);
+      else if (s === 'gradient') { localStorage.setItem('nt-bg-grad-c1', bgColor1); localStorage.setItem('nt-bg-grad-c2', bgColor2); }
+      else if (s === 'wave') { localStorage.setItem('nt-bg-wave-c1', bgColor1); localStorage.setItem('nt-bg-wave-c2', bgColor2); }
     }
-    function wpDbSave(urls) {
-      return wpOpenDb().then(db => new Promise((res, rej) => {
-        const tx = db.transaction(_WP_ST, 'readwrite');
-        const st = tx.objectStore(_WP_ST);
-        st.clear();
-        urls.forEach((url, i) => st.put({ k: i, url }));
-        tx.oncomplete = res; tx.onerror = () => rej(tx.error);
-      }));
-    }
-    function wpDbClear() {
-      return wpOpenDb().then(db => new Promise((res, rej) => {
-        const tx = db.transaction(_WP_ST, 'readwrite');
-        tx.objectStore(_WP_ST).clear();
-        tx.oncomplete = res; tx.onerror = () => rej(tx.error);
-      }));
-    }
-    function saveWallpapers() {
-      wpDbSave(bgWallpapers).catch(e => console.warn('WP save failed:', e));
-      localStorage.removeItem('nt-bg-wallpapers');
-    }
-
-    // ─── Image compression: resize to max 1920px, JPEG quality 0.78 ───
-    function compressImg(file) {
-      return new Promise(resolve => {
-        const MAX = 1920, Q = 0.78;
-        const fr = new FileReader();
-        fr.onload = ev => {
-          const img = new Image();
-          img.onload = () => {
-            let w = img.width, h = img.height;
-            if (w > MAX || h > MAX) {
-              if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
-              else { w = Math.round(w * MAX / h); h = MAX; }
-            }
-            const cv = document.createElement('canvas');
-            cv.width = w; cv.height = h;
-            cv.getContext('2d').drawImage(img, 0, 0, w, h);
-            resolve(cv.toDataURL('image/jpeg', Q));
-          };
-          img.onerror = () => resolve(ev.target.result);
-          img.src = ev.target.result;
-        };
-        fr.readAsDataURL(file);
-      });
-    }
-
-    // ─── Wallpaper init: pick active wallpaper after IDB loads ───
-    function initWallpaper() {
-      if (bgStyle !== 'image' || bgWallpapers.length === 0) {
-        activeBgUrl = bgUrl || '';
-        return;
-      }
-      const tabLocked = sessionStorage.getItem('nt-tab-wp');
-      if (tabLocked && bgWallpapers.includes(tabLocked)) {
-        activeBgUrl = tabLocked;
-        return;
-      }
-      const lastUrl = localStorage.getItem('nt-active-wp') || '';
-      const candidates = bgWallpapers.filter(u => u !== lastUrl);
-      const pool = candidates.length > 0 ? candidates : bgWallpapers;
-      activeBgUrl = pool[Math.floor(Math.random() * pool.length)];
-      try { localStorage.setItem('nt-active-wp', activeBgUrl.startsWith('data:') ? 'data:placeholder' : activeBgUrl); } catch(e) {}
-      sessionStorage.setItem('nt-tab-wp', activeBgUrl);
-    }
-
     document.documentElement.style.setProperty('--acc', currentAccent);
-    document.documentElement.style.setProperty('--weather-color', weatherColor);
-    document.documentElement.style.setProperty('--pomo-color', pomoColor);
+    if (localStorage.getItem('nt-weather-c')) document.documentElement.style.setProperty('--weather-color', weatherColor);
+    if (localStorage.getItem('nt-pomo-c')) document.documentElement.style.setProperty('--pomo-color', pomoColor);
     document.documentElement.style.setProperty('--blur-amount', blurAmt + 'px');
+    document.documentElement.style.setProperty('--bg-url', bgUrl ? `url(${bgUrl})` : 'none');
     document.documentElement.style.setProperty('--tile-radius', tileRadius + 'px');
     document.documentElement.style.setProperty('--glass-border', `rgba(205, 214, 244, ${borderAmt / 100})`);
+    applyTileStyle();
     if (document.getElementById('bg-vignette')) {
       document.getElementById('bg-vignette').style.background = `radial-gradient(circle, transparent 20%, rgba(0,0,0,${vignetteAmt / 100}) 100%)`;
     }
+    document.body.style.background = (bgStyle === 'solid') ? bgColor1 : '#1e1e2e';
 
     function applyClockColor() {
-      const el = document.getElementById('clock');
-      if (el) {
-        el.style.color = clockColor;
+      if (localStorage.getItem('nt-clock')) {
+        document.documentElement.style.setProperty('--clock-color', clockColor);
+      } else {
+        document.documentElement.style.removeProperty('--clock-color');
       }
     }
 
@@ -1792,9 +1705,9 @@
       const wim = document.getElementById('w-icon-main');
       const wid = document.getElementById('w-icon-disp');
       const pim = document.getElementById('p-icon-main');
-      if (wim) { wim.textContent = weatherIcon; wim.style.color = weatherColor; }
-      if (wid) { wid.textContent = weatherIcon; wid.style.color = weatherColor; }
-      if (pim) { pim.textContent = pomoIcon; pim.style.color = pomoColor; }
+      if (wim) wim.textContent = weatherIcon;
+      if (wid) wid.textContent = weatherIcon;
+      if (pim) pim.textContent = pomoIcon;
 
       // Weather degree animation
       let deg = 28; // Base Celsius
@@ -1825,7 +1738,7 @@
     setTimeout(() => { tick(); updatePomoDisplay(); applyWeatherPomo(); }, 100);
 
     const PER_PAGE = 6;
-    let editMode = false, scPage = 0, selIcon = ICONS[0];
+    let editMode = false, scPage = 0, selIcon = ICONS[0], editingIdx = null;
 
     function totalPages() { return Math.max(1, Math.ceil((shortcuts.length + (editMode ? 1 : 0)) / PER_PAGE)); }
 
@@ -1844,8 +1757,8 @@
           const a = document.createElement('a');
           a.className = 'shortcut sc-enter';
           a.style.animationDelay = `${(i % PER_PAGE) * 0.05}s`;
-          a.href = editMode ? '#' : s.url;
-          if (!editMode) a.target = '_blank';
+          if (!editMode) { a.href = s.url; a.target = '_blank'; }
+           else { a.addEventListener('click', ev => { if (ev.target.closest('.sc-del')) return; ev.preventDefault(); ev.stopPropagation(); editingIdx = i; selIcon = s.customIcon ? { i: 'custom', customIcon: s.customIcon, c: s.color } : ICONS.find(ic => ic.i === s.icon) || ICONS[0]; openModal(s); }); }
           const iclr = syncShortcuts ? 'var(--acc)' : s.color;
           const ibg = syncShortcuts ? 'color-mix(in srgb, var(--acc) 15%, transparent)' : `${s.color}22`;
           a.innerHTML = `<div class="sc-icon" style="background:${ibg}">${s.icon === 'custom' && s.customIcon ? '<div style="width:26px;height:26px;color:' + iclr + '">' + s.customIcon + '</div>' : '<span class="ms msf" style="color:' + iclr + '">' + s.icon + '</span>'}</div><div class="sc-name">${s.name}</div>${editMode ? '<span class="ms sc-del" data-idx="' + i + '">close</span>' : ''}`;
@@ -1894,7 +1807,7 @@
       }
     });
 
-    function openModal() {
+    function openModal(shortcut) {
       const pane = document.getElementById('settingsPane');
       const addSection = document.getElementById('addShortcutSection');
 
@@ -1903,8 +1816,10 @@
         return;
       }
 
-      document.getElementById('m-name').value = '';
-      document.getElementById('m-url').value = '';
+      document.getElementById('m-name').value = shortcut ? shortcut.name : '';
+      document.getElementById('m-url').value = shortcut ? shortcut.url : '';
+      document.getElementById('scLabel').textContent = shortcut ? 'Edit Shortcut' : 'Pin a Shortcut';
+      document.getElementById('mconfirm').textContent = shortcut ? 'Save' : 'Pin it';
       renderIconPicker();
 
       addSection.style.display = 'block';
@@ -1951,7 +1866,8 @@
     document.getElementById('sc-track').addEventListener('click', e => {
       const addBtn = e.target.closest('.sc-add-btn');
       if (addBtn) {
-        e.stopPropagation(); // Prevent document click listener from immediately closing the sidebar
+        e.stopPropagation();
+        editingIdx = null;
         openModal();
         return;
       }
@@ -1998,20 +1914,27 @@
 
     document.getElementById('mcancel').addEventListener('click', () => {
       document.getElementById('addShortcutSection').style.display = 'none';
+      document.getElementById('scLabel').textContent = 'Pin a Shortcut';
+      document.getElementById('mconfirm').textContent = 'Pin it';
+      editingIdx = null;
     });
+
     document.getElementById('mconfirm').addEventListener('click', () => {
       const name = document.getElementById('m-name').value.trim();
       let url = document.getElementById('m-url').value.trim();
       if (!name || !url) return;
       if (!url.startsWith('http')) url = 'https://' + url;
-      shortcuts.push({ name, url, icon: selIcon.i, customIcon: selIcon.customIcon || null, color: selIcon.c });
+      const entry = { name, url, icon: selIcon.i, customIcon: selIcon.customIcon || null, color: selIcon.c };
+      if (editingIdx !== null) {
+        shortcuts[editingIdx] = entry;
+        editingIdx = null;
+      } else {
+        shortcuts.push(entry);
+      }
       saveShortcuts();
       document.getElementById('addShortcutSection').style.display = 'none';
-
-      // Navigate to the last page so the user sees the new item animate in
-      const tp = totalPages();
-      scPage = tp - 1;
-      renderShortcuts();
+      document.getElementById('scLabel').textContent = 'Pin a Shortcut';
+      document.getElementById('mconfirm').textContent = 'Pin it';
     });
 
     function tick() {
@@ -2236,7 +2159,7 @@
     }, { passive: false });
 
     // Touch swipe support for Pomodoro card
-    (function() {
+    (function () {
       const pomoCard = document.getElementById('pomo-card');
       let touchStartX = 0;
       let touchStartY = 0;
@@ -2276,22 +2199,6 @@
 
     const PAL = [{ n: 'Mauve', c: '#cba6f7' }, { n: 'Blue', c: '#89b4fa' }, { n: 'Peach', c: '#fab387' }, { n: 'Green', c: '#a6e3a1' }, { n: 'Red', c: '#f38ba8' }, { n: 'Lavender', c: '#b4befe' }];
 
-    function renderAccents() {
-      const el = document.getElementById('setAccent');
-      if (!el) return;
-      el.innerHTML = '';
-      PAL.forEach((p) => {
-        const d = document.createElement('div');
-        d.className = 'accent-dot';
-        d.style.background = p.c;
-        if (currentAccent === p.c) { d.classList.add('active'); }
-        d.addEventListener('click', () => {
-          updateGlobalColor(p.c);
-        });
-        el.appendChild(d);
-      });
-    }
-
     function updateGlobalColor(c) {
       currentAccent = c;
       clockColor = c;
@@ -2301,30 +2208,11 @@
       document.documentElement.style.setProperty('--acc', c);
       document.documentElement.style.setProperty('--weather-color', c);
       document.documentElement.style.setProperty('--pomo-color', c);
-      document.getElementById('customColorCircle').style.background = c;
-
-      document.querySelectorAll('.accent-dot').forEach(x => {
-        x.classList.toggle('active', x.style.backgroundColor === c || rgbToHex(x.style.backgroundColor) === c.toLowerCase());
-      });
+      if (typeof accentPicker !== 'undefined') accentPicker.setColor(c, true);
 
       saveAccent(); saveClock(); saveWeatherColor(); savePomoColor();
       applyClockColor(); applyWeatherPomo(); updateBgButtons();
     }
-
-    function rgbToHex(rgb) {
-      if (!rgb) return '';
-      const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-      if (!match) return rgb;
-      const hex = (x) => ("0" + parseInt(x).toString(16)).slice(-2);
-      return "#" + hex(match[1]) + hex(match[2]) + hex(match[3]);
-    }
-
-    document.getElementById('customColor').addEventListener('input', (e) => {
-      updateGlobalColor(e.target.value);
-    });
-
-    renderAccents();
-
 
     // Settings pane toggle
     const settingsBtn = document.getElementById('settingsBtn');
@@ -2377,9 +2265,17 @@
       });
     });
 
+    document.getElementById('tileOpacitySlider').value = tileOpacity;
+    document.getElementById('tileOpacitySlider').addEventListener('input', e => {
+      tileOpacity = parseInt(e.target.value);
+      applyTileStyle();
+      saveTileOpacity();
+    });
+
     document.getElementById('blurSlider').value = blurAmt;
     document.getElementById('blurSlider').addEventListener('input', e => {
       blurAmt = parseInt(e.target.value);
+      document.documentElement.style.setProperty('--blur-amount', blurAmt + 'px');
       saveBlur();
       updateBgButtons();
     });
@@ -2421,138 +2317,8 @@
       localStorage.setItem('nt-border-w', borderWidth);
     });
 
-    // ─── Wallpaper Stack Manager ───────────────────────────────────────────
-
-    function applyActiveWallpaper() {
-      const layer = document.getElementById('bg-image-layer');
-      const container = document.getElementById('grainient-container');
-      if (!layer) return;
-      container.style.display = 'none';
-      layer.classList.add('visible');
-      layer.style.opacity = '1';
-      layer.style.backgroundImage = activeBgUrl ? `url("${activeBgUrl}")` : 'none';
-      layer.style.filter = `blur(${blurAmt}px) brightness(${brightAmt / 100})`;
-    }
-
-    function renderWpGrid() {
-      const grid = document.getElementById('wpGrid');
-      grid.innerHTML = '';
-      if (bgWallpapers.length === 0) {
-        grid.innerHTML = '<div class="wp-empty" style="grid-column:1/-1;">No wallpapers added yet.</div>';
-        return;
-      }
-      bgWallpapers.forEach((url, idx) => {
-        const isActive = url === activeBgUrl;
-        const card = document.createElement('div');
-        card.className = 'wp-thumb' + (isActive ? ' is-active' : '');
-        card.title = 'Click to use this wallpaper';
-        card.style.cursor = 'pointer';
-
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = 'Wallpaper ' + (idx + 1);
-        img.onerror = () => { card.style.background = 'var(--s1)'; img.style.display = 'none'; };
-        card.appendChild(img);
-
-        if (isActive) {
-          const badge = document.createElement('div');
-          badge.className = 'wp-active-badge';
-          badge.textContent = 'Active';
-          card.appendChild(badge);
-        }
-
-        card.addEventListener('click', () => {
-          activeBgUrl = url;
-          localStorage.setItem('nt-active-wp', url);
-          sessionStorage.setItem('nt-tab-wp', url);
-          applyActiveWallpaper();
-          renderWpGrid();
-        });
-
-        const delBtn = document.createElement('button');
-        delBtn.className = 'wp-thumb-del';
-        delBtn.textContent = 'close';
-        delBtn.title = 'Remove';
-        delBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          card.style.transition = 'opacity 0.25s, transform 0.25s';
-          card.style.opacity = '0';
-          card.style.transform = 'scale(0.85)';
-          setTimeout(() => {
-            bgWallpapers.splice(idx, 1);
-            saveWallpapers();
-            if (activeBgUrl === url) {
-              activeBgUrl = bgWallpapers.length > 0 ? bgWallpapers[Math.floor(Math.random() * bgWallpapers.length)] : '';
-            }
-            updateBgButtons();
-          }, 250);
-        });
-        card.appendChild(delBtn);
-        grid.appendChild(card);
-      });
-    }
-
-    function addWallpaperUrl(url) {
-      url = url.trim();
-      if (!url) return;
-      if (bgWallpapers.includes(url)) return;
-      bgWallpapers.push(url);
-      activeBgUrl = url;
-      localStorage.setItem('nt-active-wp', url);
-      sessionStorage.setItem('nt-tab-wp', url);
-      saveWallpapers();
-      bgStyle = 'image';
-      saveBg();
-      applyActiveWallpaper();
-      updateBgButtons();
-    }
-
-    document.getElementById('wpAddUrl').addEventListener('click', () => {
-      const inp = document.getElementById('wpUrlInput');
-      addWallpaperUrl(inp.value);
-      inp.value = '';
-    });
-
-    document.getElementById('wpUrlInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') document.getElementById('wpAddUrl').click();
-    });
-
-    document.getElementById('wpFileInput').addEventListener('change', (e) => {
-      const files = Array.from(e.target.files);
-      if (!files.length) return;
-      let firstNewUrl = null;
-      let pending = files.length;
-      files.forEach(file => {
-        compressImg(file).then(dataUrl => {
-          if (!bgWallpapers.includes(dataUrl)) {
-            bgWallpapers.push(dataUrl);
-            if (!firstNewUrl) firstNewUrl = dataUrl;
-          }
-          pending--;
-          if (pending === 0) {
-            if (firstNewUrl) {
-              activeBgUrl = firstNewUrl;
-              sessionStorage.setItem('nt-tab-wp', firstNewUrl);
-              try { localStorage.setItem('nt-active-wp', firstNewUrl.startsWith('data:') ? 'data:placeholder' : firstNewUrl); } catch(e) {}
-            }
-            saveWallpapers();
-            bgStyle = 'image';
-            saveBg();
-            applyActiveWallpaper();
-            updateBgButtons();
-          }
-        });
-      });
-      e.target.value = '';
-    });
-
-    // ─── Background buttons & apply logic ─────────────────────────────────
-
+    // Apply accent color to active background style button
     function updateBgButtons() {
-      const isImg = bgStyle === 'image';
-      const stackSection = document.getElementById('wpStackSection');
-      stackSection.style.display = isImg ? 'block' : 'none';
-      if (isImg) renderWpGrid();
 
       document.querySelectorAll('.set-bg').forEach(btn => {
         if (btn.dataset.style === bgStyle) {
@@ -2567,54 +2333,487 @@
       });
 
       const container = document.getElementById('grainient-container');
-      const layer = document.getElementById('bg-image-layer');
-      if (isImg) {
-        const src = activeBgUrl || (bgWallpapers.length > 0 ? bgWallpapers[0] : '');
+      const imgLayer = document.getElementById('bg-image-layer');
+      const vidLayer = document.getElementById('bg-video-layer');
+      const controls = document.getElementById('mediaControlsContainer');
+      const cSelector = document.getElementById('bgColorSelectors');
+      if (cSelector) cSelector.style.display = (bgStyle === 'solid' || bgStyle === 'wave' || bgStyle === 'gradient') ? 'flex' : 'none';
+      if (controls) controls.style.display = (bgStyle === 'image') ? 'flex' : 'none';
+
+      if (bgStyle === 'solid') {
         container.style.display = 'none';
-        layer.classList.add('visible');
-        layer.style.opacity = '1';
-        layer.style.backgroundImage = src ? `url("${src}")` : 'none';
-        layer.style.filter = `blur(${blurAmt}px) brightness(${brightAmt / 100})`;
+        imgLayer.classList.add('visible');
+        imgLayer.style.background = bgColor1;
+        imgLayer.style.backgroundImage = 'none';
+        imgLayer.style.opacity = '1';
+        imgLayer.style.filter = `blur(${blurAmt}px) brightness(${brightAmt / 100})`;
+        vidLayer.style.opacity = '0';
+        vidLayer.style.display = 'none';
+        vidLayer.removeAttribute('src');
+        vidLayer.load();
+        document.body.style.background = 'transparent';
+      } else if (bgStyle === 'image') {
+        container.style.display = 'none';
+        document.body.style.background = '#1e1e2e';
+
+        const activeWp = wallpapers.find(w => w.id === activeWallpaperId);
+        let url = activeWp ? activeWp.url : bgUrl;
+        let isVid = activeWp ? activeWp.isVideo : isVideoStr(url);
+
+        if (isVid) {
+          imgLayer.classList.remove('visible');
+          imgLayer.style.opacity = '0';
+          vidLayer.style.display = 'block';
+          if (vidLayer.src !== url) vidLayer.src = url;
+          vidLayer.style.opacity = '1';
+          vidLayer.style.filter = `blur(${blurAmt}px) brightness(${brightAmt / 100})`;
+        } else {
+          vidLayer.style.opacity = '0';
+          vidLayer.style.display = 'none';
+          vidLayer.removeAttribute('src');
+          vidLayer.load();
+          imgLayer.classList.add('visible');
+          imgLayer.style.opacity = '1';
+          imgLayer.style.backgroundImage = url ? `url("${url}")` : 'none';
+          imgLayer.style.filter = `blur(${blurAmt}px) brightness(${brightAmt / 100})`;
+        }
       } else {
         container.style.display = 'block';
-        layer.classList.remove('visible');
-        layer.style.opacity = '0';
+        container.style.filter = `blur(${blurAmt}px) brightness(${brightAmt / 100})`;
+        imgLayer.classList.remove('visible');
+        imgLayer.style.opacity = '0';
+        vidLayer.style.opacity = '0';
+        vidLayer.style.display = 'none';
+        vidLayer.removeAttribute('src');
+        vidLayer.load();
+        document.body.style.background = '#1e1e2e';
         if (window._updateBgUniforms) window._updateBgUniforms();
       }
     }
 
+    function isVideoStr(str) {
+      if (!str) return false;
+      if (str.startsWith('data:video/')) return true;
+      const clean = str.split('?')[0].toLowerCase();
+      return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.ogg');
+    }
+
+    async function initWallpapers() {
+      if (typeof localforage !== 'undefined') {
+        const stored = await localforage.getItem('nt-wallpapers');
+        if (stored) {
+          wallpapers = stored.filter(w => !w.url.startsWith('blob:') || w.blob);
+          for (const wp of wallpapers) {
+            if (wp.blob && wp.url.startsWith('blob:')) {
+              wp.url = URL.createObjectURL(wp.blob);
+            }
+          }
+        }
+      }
+
+      if (activeWallpaperId && !wallpapers.find(w => w.id === activeWallpaperId)) {
+        activeWallpaperId = wallpapers.length ? wallpapers[0].id : null;
+        bgUrl = activeWallpaperId ? wallpapers.find(w => w.id === activeWallpaperId).url : '';
+        if (!activeWallpaperId) { bgStyle = DEFAULT_BG; saveBg(); }
+        saveBgUrl();
+        saveWallpapers();
+      }
+
+      const oldBgUrl = localStorage.getItem('nt-bg-url');
+      if (oldBgUrl && !wallpapers.length) {
+        const id = Date.now().toString();
+        wallpapers.push({ id, url: oldBgUrl, type: 'url', isVideo: isVideoStr(oldBgUrl) });
+        activeWallpaperId = id;
+        saveWallpapers();
+      }
+
+      renderGallery();
+      updateBgButtons();
+    }
+
+    function renderGallery() {
+      const g = document.getElementById('wallpaperGallery');
+      if (!g) return;
+      g.innerHTML = '';
+      wallpapers.forEach(wp => {
+        const el = document.createElement('div');
+        el.style.cssText = `position:relative; width:100%; aspect-ratio:16/9; border-radius:8px; overflow:hidden; cursor:pointer; border:2px solid ${activeWallpaperId === wp.id ? 'var(--acc)' : 'transparent'}; transition:all 0.2s; background:var(--s1);`;
+        el.onclick = () => {
+          activeWallpaperId = wp.id;
+          bgUrl = wp.url;
+          bgStyle = 'image';
+          saveBgUrl();
+          saveBg();
+          saveWallpapers();
+          // Apply background first, then re-render gallery for visual feedback
+          updateBgButtons();
+          renderGallery();
+        };
+
+        if (wp.isVideo) {
+          const v = document.createElement('video');
+          v.src = wp.url;
+          v.style.cssText = 'width:100%; height:100%; object-fit:cover; pointer-events:none;';
+          v.muted = true; v.loop = true;
+          el.onmouseenter = () => v.play().catch(() => { });
+          el.onmouseleave = () => { v.pause(); v.currentTime = 0; };
+          el.appendChild(v);
+
+          const badge = document.createElement('div');
+          badge.textContent = 'VID';
+          badge.style.cssText = 'position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.6); color:var(--tx); font-size:10px; padding:2px 4px; border-radius:4px; font-weight:bold; pointer-events:none;';
+          el.appendChild(badge);
+        } else {
+          const img = document.createElement('img');
+          img.src = wp.url;
+          img.style.cssText = 'width:100%; height:100%; object-fit:cover; pointer-events:none;';
+          el.appendChild(img);
+        }
+
+        if (activeWallpaperId === wp.id) {
+          const activeBadge = document.createElement('div');
+          activeBadge.textContent = 'ACTIVE';
+          activeBadge.style.cssText = 'position:absolute; bottom:4px; left:4px; background:var(--acc); color:var(--crust); font-size:10px; padding:2px 6px; border-radius:10px; font-weight:bold; pointer-events:none; z-index:2;';
+          el.appendChild(activeBadge);
+        }
+
+        const delBtn = document.createElement('div');
+        delBtn.innerHTML = '<span class="ms" style="font-size:14px;">close</span>';
+        delBtn.style.cssText = 'position:absolute; top:4px; left:4px; background:rgba(0,0,0,0.6); color:var(--tx); border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; z-index:2;';
+        el.appendChild(delBtn);
+
+        el.addEventListener('mouseenter', () => delBtn.style.opacity = '1');
+        el.addEventListener('mouseleave', () => delBtn.style.opacity = '0');
+
+        delBtn.onclick = (e) => {
+          e.stopPropagation();
+          wallpapers = wallpapers.filter(w => w.id !== wp.id);
+          if (activeWallpaperId === wp.id) {
+            activeWallpaperId = wallpapers.length ? wallpapers[0].id : null;
+            bgUrl = activeWallpaperId ? wallpapers[0].url : '';
+            saveBgUrl();
+            updateBgButtons();
+          }
+          saveWallpapers();
+          renderGallery();
+        };
+
+        g.appendChild(el);
+      });
+    }
+
+    class ColorPicker {
+      constructor(el, opts = {}) {
+        this.el = typeof el === 'string' ? document.getElementById(el) : el;
+        this.color = opts.initial || '#ffffff';
+        this.onChange = opts.onChange || (() => {});
+        this.swatches = opts.swatches || [];
+        this._isOpen = false;
+        this._hsv = this.hexToHsv(this.color);
+        this._render();
+        this._bind();
+      }
+      _render() {
+        this.el.innerHTML = `
+          <div class="cp-wrap">
+            <div class="cp-trigger">
+              <div class="cp-preview" style="background:${this.color}"></div>
+              <span class="cp-hex">${this.color.toLowerCase()}</span>
+              <span class="ms cp-arrow">expand_more</span>
+            </div>
+            <div class="cp-drop">
+              <div class="cp-sv">
+                <div class="cp-sv-bg" style="background:${this.hsvToHex(this._hsv.h, 100, 100)}">
+                  <div class="cp-sv-white"></div>
+                  <div class="cp-sv-black"></div>
+                  <div class="cp-sv-handle" style="left:${this._hsv.s}%;top:${100 - this._hsv.v}%"></div>
+                </div>
+              </div>
+              <div class="cp-hue">
+                <div class="cp-hue-track">
+                  <div class="cp-hue-handle" style="left:${this._hsv.h / 360 * 100}%"></div>
+                </div>
+              </div>
+              <div class="cp-row"><span>#</span><input type="text" class="cp-input" value="${this.color.slice(1).toUpperCase()}" maxlength="6"></div>
+              <div class="cp-swatches">${this.swatches.map(s => `<div class="cp-swatch" style="background:${s}"></div>`).join('')}</div>
+            </div>
+          </div>`;
+        this._cache();
+      }
+      _cache() {
+        this.wrap = this.el.querySelector('.cp-wrap');
+        this.trigger = this.el.querySelector('.cp-trigger');
+        this.preview = this.el.querySelector('.cp-preview');
+        this.hexLabel = this.el.querySelector('.cp-hex');
+        this.arrow = this.el.querySelector('.cp-arrow');
+        this.drop = this.el.querySelector('.cp-drop');
+        this.sv = this.el.querySelector('.cp-sv');
+        this.svBg = this.el.querySelector('.cp-sv-bg');
+        this.svHandle = this.el.querySelector('.cp-sv-handle');
+        this.hueTrack = this.el.querySelector('.cp-hue-track');
+        this.hueHandle = this.el.querySelector('.cp-hue-handle');
+        this.input = this.el.querySelector('.cp-input');
+        this.swatchEls = this.el.querySelectorAll('.cp-swatch');
+      }
+      _bind() {
+        this.trigger.addEventListener('click', (e) => { e.stopPropagation(); this._toggle(); });
+
+        this.input.addEventListener('input', (e) => {
+          let v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+          e.target.value = v;
+          if (v.length === 6) this._setColor('#' + v);
+        });
+
+        let onSV = false;
+        const svMove = (e) => {
+          const rect = this.sv.getBoundingClientRect();
+          let x = (e.clientX - rect.left) / rect.width;
+          let y = (e.clientY - rect.top) / rect.height;
+          this._hsv.s = Math.round(Math.max(0, Math.min(1, x)) * 100);
+          this._hsv.v = Math.round(Math.max(0, Math.min(1, 1 - y)) * 100);
+          this._updateUI();
+          this._setColor(this._getHex());
+        };
+        this.sv.addEventListener('mousedown', (e) => { onSV = true; svMove(e); });
+        document.addEventListener('mousemove', (e) => { if (onSV) svMove(e); });
+        document.addEventListener('mouseup', () => { onSV = false; });
+
+        let onHue = false;
+        const hueMove = (e) => {
+          const rect = this.hueTrack.getBoundingClientRect();
+          let x = (e.clientX - rect.left) / rect.width;
+          this._hsv.h = Math.round(Math.max(0, Math.min(1, x)) * 360);
+          this._updateUI();
+          this._setColor(this._getHex());
+        };
+        this.hueTrack.addEventListener('mousedown', (e) => { onHue = true; hueMove(e); });
+        document.addEventListener('mousemove', (e) => { if (onHue) hueMove(e); });
+        document.addEventListener('mouseup', () => { onHue = false; });
+
+        this.swatchEls.forEach(s => {
+          s.addEventListener('click', () => {
+            const hex = this.rgbToHex(s.style.backgroundColor);
+            this._hsv = this.hexToHsv(hex);
+            this._updateUI();
+            this._setColor(hex);
+            this._close();
+          });
+        });
+
+        document.addEventListener('click', (e) => {
+          if (this._isOpen && !this.wrap.contains(e.target)) this._close();
+        });
+      }
+      _toggle() { if (this._isOpen) this._close(); else this._open(); }
+      _open() { this._isOpen = true; this.drop.classList.add('open'); this.arrow.classList.add('open'); }
+      _close() { this._isOpen = false; this.drop.classList.remove('open'); this.arrow.classList.remove('open'); }
+      _updateUI() {
+        const hex = this._getHex();
+        const hueHex = this.hsvToHex(this._hsv.h, 100, 100);
+        this.svBg.style.background = hueHex;
+        this.svHandle.style.left = this._hsv.s + '%';
+        this.svHandle.style.top = (100 - this._hsv.v) + '%';
+        this.svHandle.style.background = hex;
+        this.hueHandle.style.left = (this._hsv.h / 360 * 100) + '%';
+        this.hueHandle.style.background = `hsl(${this._hsv.h},100%,50%)`;
+        this.preview.style.background = hex;
+        this.hexLabel.textContent = hex.toLowerCase();
+        this.input.value = hex.slice(1).toUpperCase();
+      }
+      _getHex() { return this.hsvToHex(this._hsv.h, this._hsv.s, this._hsv.v); }
+      _setColor(hex, silent) {
+        this.color = hex;
+        this._hsv = this.hexToHsv(hex);
+        this._updateUI();
+        if (!silent) this.onChange(hex);
+      }
+      setColor(hex, silent) { this._setColor(hex, silent); }
+      hexToHsv(hex) {
+        hex = hex.replace('#', '');
+        const r = parseInt(hex.slice(0, 2), 16) / 255;
+        const g = parseInt(hex.slice(2, 4), 16) / 255;
+        const b = parseInt(hex.slice(4, 6), 16) / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, v = max;
+        const d = max - min;
+        s = max === 0 ? 0 : d / max;
+        if (max !== min) {
+          switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+          }
+          h /= 6;
+        } else h = 0;
+        return { h: Math.round(h * 360), s: Math.round(s * 100), v: Math.round(v * 100) };
+      }
+      hsvToHex(h, s, v) {
+        s /= 100; v /= 100; h /= 360;
+        const i = Math.floor(h * 6), f = h * 6 - i;
+        const p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+        let r, g, b;
+        switch (i % 6) {
+          case 0: r = v; g = t; b = p; break;
+          case 1: r = q; g = v; b = p; break;
+          case 2: r = p; g = v; b = t; break;
+          case 3: r = p; g = q; b = v; break;
+          case 4: r = t; g = p; b = v; break;
+          case 5: r = v; g = p; b = q; break;
+        }
+        const toHex = (x) => { const c = Math.round(x * 255); return (c < 16 ? '0' : '') + c.toString(16); };
+        return '#' + toHex(r) + toHex(g) + toHex(b);
+      }
+      rgbToHex(rgb) {
+        if (!rgb) return '#000000';
+        const m = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+        if (!m) return rgb;
+        return '#' + [m[1], m[2], m[3]].map(x => ("0" + parseInt(x).toString(16)).slice(-2)).join('');
+      }
+    }
+
+    const accentPicker = new ColorPicker('accentPicker', {
+      initial: currentAccent,
+      onChange: (hex) => updateGlobalColor(hex),
+      swatches: PAL.map(p => p.c)
+    });
+
+    const bgPicker1 = new ColorPicker('bgColorPicker1', {
+      initial: bgColor1,
+      onChange: (hex) => {
+        bgColor1 = hex;
+        saveBgColors();
+        if (window._updateBgUniforms) window._updateBgUniforms();
+        if (bgStyle === 'solid') {
+          document.body.style.background = hex;
+          const il = document.getElementById('bg-image-layer');
+          if (il) il.style.background = hex;
+        }
+      },
+      swatches: PAL.map(p => p.c)
+    });
+    const bgPicker2 = new ColorPicker('bgColorPicker2', {
+      initial: bgColor2,
+      onChange: (hex) => {
+        bgColor2 = hex;
+        saveBgColors();
+        if (window._updateBgUniforms) window._updateBgUniforms();
+      },
+      swatches: PAL.map(p => p.c)
+    });
+    window._syncBgPickers = function() {
+      loadBgColors(bgStyle);
+      bgPicker1.setColor(bgColor1, true);
+      bgPicker2.setColor(bgColor2, true);
+      const c2 = document.getElementById('bgColorPicker2Container');
+      if (c2) c2.style.display = bgStyle === 'solid' ? 'none' : '';
+    };
+    _syncBgPickers();
+
+    document.getElementById('addMediaUrlBtn').addEventListener('click', () => {
+      const url = document.getElementById('bgUrlInput').value.trim();
+      if (url) {
+        const id = Date.now().toString();
+        wallpapers.push({ id, url, type: 'url', isVideo: isVideoStr(url) });
+        activeWallpaperId = id;
+        bgUrl = url;
+        bgStyle = 'image';
+        saveBgUrl();
+        saveBg();
+        saveWallpapers();
+        renderGallery();
+        updateBgButtons();
+        document.getElementById('bgUrlInput').value = '';
+      }
+    });
+
+    function resizeImage(file, maxDim = 1920) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        img.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round(height * maxDim / width);
+              width = maxDim;
+            } else {
+              width = Math.round(width * maxDim / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.92));
+        };
+        img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Image load failed')); };
+        img.src = objectUrl;
+      });
+    }
+
+    document.getElementById('bgFileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const isVideo = file.type.startsWith('video/');
+      const id = Date.now().toString();
+
+      // Instantly show the wallpaper using a local object URL
+      const objectUrl = URL.createObjectURL(file);
+      wallpapers.push({ id, url: objectUrl, type: 'file', isVideo: !!isVideo, blob: isVideo ? file : null });
+      activeWallpaperId = id;
+      bgUrl = objectUrl;
+      bgStyle = 'image';
+      saveBg();
+      saveBgUrl();
+      saveWallpapers();
+      renderGallery();
+      updateBgButtons();
+
+      // Convert to persistent data URL in the background
+      const persistWallpaper = (dataUrl) => {
+        const wp = wallpapers.find(w => w.id === id);
+        if (wp) {
+          wp.url = dataUrl;
+          delete wp.blob;
+          URL.revokeObjectURL(objectUrl);
+          if (activeWallpaperId === id) {
+            bgUrl = dataUrl;
+            saveBgUrl();
+            updateBgButtons();
+          }
+        }
+        saveWallpapers();
+        renderGallery();
+      };
+
+      if (isVideo) {
+        // Video stored as blob in IndexedDB — no data URL conversion needed
+      } else {
+        resizeImage(file).then(persistWallpaper).catch(() => {
+          const reader = new FileReader();
+          reader.onload = (event) => persistWallpaper(event.target.result);
+          reader.readAsDataURL(file);
+        });
+      }
+    });
+
     // Background style buttons
     document.querySelectorAll('.set-bg').forEach(btn => {
       btn.addEventListener('click', () => {
+        saveBgColors(bgStyle);
         bgStyle = btn.dataset.style;
+        loadBgColors(bgStyle);
         saveBg();
         updateBgButtons();
+        if (window._syncBgPickers) window._syncBgPickers();
       });
     });
+    updateBgButtons();
 
-    // ─── Async IDB init: load wallpapers then initialise background ───
-    wpDbLoad()
-      .then(urls => {
-        if (urls.length === 0) {
-          const legacy = JSON.parse(localStorage.getItem('nt-bg-wallpapers') || '[]');
-          if (legacy.length > 0) {
-            bgWallpapers = legacy;
-            wpDbSave(legacy).catch(() => {});
-            localStorage.removeItem('nt-bg-wallpapers');
-          }
-        } else {
-          bgWallpapers = urls;
-        }
-        initWallpaper();
-        document.documentElement.style.setProperty('--bg-url', activeBgUrl ? `url(${activeBgUrl})` : 'none');
-        updateBgButtons();
-      })
-      .catch(() => {
-        bgWallpapers = JSON.parse(localStorage.getItem('nt-bg-wallpapers') || '[]');
-        initWallpaper();
-        document.documentElement.style.setProperty('--bg-url', activeBgUrl ? `url(${activeBgUrl})` : 'none');
-        updateBgButtons();
-      });
+    initWallpapers();
 
     // Reset
     document.getElementById('resetAll').addEventListener('click', () => {
@@ -2629,26 +2828,60 @@
       blurAmt = DEFAULT_BLUR; saveBlur();
       tileRadius = DEFAULT_RADIUS; saveRadius();
       borderAmt = DEFAULT_BORDER; saveBorder();
+      tileOpacity = 55; applyTileStyle(); saveTileOpacity(); document.getElementById('tileOpacitySlider').value = 55;
       brightAmt = 80; saveBright();
       bgStyle = DEFAULT_BG; saveBg();
       bgUrl = ''; saveBgUrl();
-      bgWallpapers = []; saveWallpapers(); wpDbClear().catch(() => {});
-      activeBgUrl = '';
-      localStorage.removeItem('nt-active-wp');
-      sessionStorage.removeItem('nt-tab-wp');
+      localStorage.removeItem('nt-bg-solid'); localStorage.removeItem('nt-bg-grad-c1'); localStorage.removeItem('nt-bg-grad-c2'); localStorage.removeItem('nt-bg-wave-c1'); localStorage.removeItem('nt-bg-wave-c2');
+      loadBgColors(bgStyle);
+      if (window._syncBgPickers) window._syncBgPickers();
+      accentPicker.setColor(DEFAULT_ACCENT, true);
       document.getElementById('blurSlider').value = DEFAULT_BLUR;
       document.getElementById('radiusSlider').value = DEFAULT_RADIUS;
       document.getElementById('borderSlider').value = DEFAULT_BORDER;
       document.getElementById('borderWidthSlider').value = DEFAULT_BORDER_WIDTH;
       document.documentElement.style.setProperty('--border-width', DEFAULT_BORDER_WIDTH + 'px');
       document.getElementById('brightSlider').value = 80;
-      renderAccents(); renderShortcuts(); renderTasks();
+      document.documentElement.setAttribute('data-theme', 'dark');
+      renderShortcuts(); renderTasks();
       applyClockColor(); updateBgButtons();
       applyWeatherPomo();
     });
 
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const keys = ['nt-shcuts','nt-tasks','nt-accent','nt-clock','nt-weather-c','nt-pomo-c','nt-weather-i','nt-pomo-i','nt-blur','nt-radius','nt-border','nt-border-w','nt-tile-op','nt-bg','nt-bg-url','nt-active-wp','nt-24h','nt-sec','nt-w-unit','nt-bright','nt-vignette','nt-sync-sc','nt-bg-solid','nt-bg-grad-c1','nt-bg-grad-c2','nt-bg-wave-c1','nt-bg-wave-c2'];
+      const data = {};
+      keys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) data[k] = v; });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'yoink-settings.json'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('importBtn').addEventListener('click', () => {
+      document.getElementById('importFile').click();
+    });
+
+    document.getElementById('importFile').addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          Object.entries(data).forEach(([k, v]) => localStorage.setItem(k, v));
+          alert('Settings imported! Reloading page…');
+          location.reload();
+        } catch (err) {
+          alert('Invalid settings file.');
+        }
+      };
+      reader.readAsText(file);
+    });
+
     // Grainient WebGL Background
-    (function () {
+    (async function () {
+      const ogl = await import('https://cdn.jsdelivr.net/npm/ogl@1.0.11/+esm');
       const { Renderer, Program, Mesh, Triangle } = ogl;
       const vertex = `#version 300 es
     in vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }
@@ -2656,7 +2889,7 @@
       const fragment = `#version 300 es
     precision highp float;
     uniform vec2 iResolution; uniform float iTime;
-    uniform float uTimeSpeed, uColorBalance, uWarpStrength, uWarpFrequency, uWarpSpeed, uWarpAmplitude, uBlendAngle, uBlendSoftness, uRotationAmount, uNoiseScale, uGrainAmount, uGrainScale, uGrainAnimated, uContrast, uGamma, uSaturation, uZoom;
+    uniform float uTimeSpeed, uColorBalance, uWarpStrength, uWarpFrequency, uWarpSpeed, uWarpAmplitude, uBlendAngle, uBlendSoftness, uRotationAmount, uNoiseScale, uGrainAmount, uGrainScale, uGrainAnimated, uContrast, uGamma, uSaturation, uZoom, uBlobMode;
     uniform vec2 uCenterOffset; uniform vec3 uColor1, uColor2, uColor3;
     out vec4 fragColor;
     float S(float a, float b, float t) { return smoothstep(a, b, t); }
@@ -2668,13 +2901,26 @@
       float ratio=iResolution.x/iResolution.y; vec2 tuv=uv-0.5+uCenterOffset;
       tuv/=max(uZoom,0.001); float degree=noise(vec2(t*0.1,tuv.x*tuv.y)*uNoiseScale);
       tuv.y*=1.0/ratio; tuv*=Rot(radians((degree-0.5)*uRotationAmount+180.0)); tuv.y*=ratio;
-      float ws=max(uWarpStrength,0.001); float amplitude=uWarpAmplitude/ws;
-      tuv.x+=sin(tuv.y*uWarpFrequency+t*uWarpSpeed)/amplitude;
-      tuv.y+=sin(tuv.x*(uWarpFrequency*1.5)+t*uWarpSpeed)/(amplitude*0.5);
-      float blendX=(tuv*Rot(radians(uBlendAngle))).x;
-      vec3 layer1=mix(uColor3,uColor2,S(-0.3-uColorBalance-uBlendSoftness,0.2-uColorBalance+uBlendSoftness,blendX));
-      vec3 layer2=mix(uColor2,uColor1,S(-0.3-uColorBalance-uBlendSoftness,0.2-uColorBalance+uBlendSoftness,blendX));
-      vec3 col=mix(layer1,layer2,S(0.5-uColorBalance+uBlendSoftness,-0.3-uColorBalance-uBlendSoftness,tuv.y));
+      vec3 col;
+      if (uBlobMode > 0.5) {
+        vec2 uv2=uv*0.8;
+        vec2 b1=vec2(0.3+0.2*sin(t*0.5),0.3+0.2*cos(t*0.7));
+        vec2 b2=vec2(0.7+0.15*sin(t*0.8+1.0),0.5+0.2*cos(t*0.6+2.0));
+        vec2 b3=vec2(0.5+0.2*sin(t*0.3+3.0),0.8+0.15*cos(t*0.9+1.0));
+        float d1=exp(-length(uv2-b1)*3.5);
+        float d2=exp(-length(uv2-b2)*3.5);
+        float d3=exp(-length(uv2-b3)*3.5);
+        float tot=d1+d2+d3+0.001;
+        col=(uColor1*d1+uColor2*d2+uColor3*d3)/tot;
+      } else {
+        float ws=max(uWarpStrength,0.001); float amplitude=uWarpAmplitude/ws;
+        tuv.x+=sin(tuv.y*uWarpFrequency+t*uWarpSpeed)/amplitude;
+        tuv.y+=sin(tuv.x*(uWarpFrequency*1.5)+t*uWarpSpeed)/(amplitude*0.5);
+        float blendX=(tuv*Rot(radians(uBlendAngle))).x;
+        vec3 layer1=mix(uColor3,uColor2,S(-0.3-uColorBalance-uBlendSoftness,0.2-uColorBalance+uBlendSoftness,blendX));
+        vec3 layer2=mix(uColor2,uColor1,S(-0.3-uColorBalance-uBlendSoftness,0.2-uColorBalance+uBlendSoftness,blendX));
+        col=mix(layer1,layer2,S(0.5-uColorBalance+uBlendSoftness,-0.3-uColorBalance-uBlendSoftness,tuv.y));
+      }
       float grain=fract(sin(dot(uv*uGrainScale,vec2(12.9898,78.233)))*43758.5453);
       col+=(grain-0.5)*uGrainAmount; col=(col-0.5)*uContrast+0.5;
       col=mix(vec3(dot(col,vec3(0.2126,0.7152,0.0722))),col,uSaturation);
@@ -2689,7 +2935,7 @@
         vertex, fragment,
         uniforms: {
           iTime: { value: 0 }, iResolution: { value: new Float32Array([gl.canvas.width, gl.canvas.height]) },
-          uTimeSpeed: { value: 0.15 }, uColorBalance: { value: 0.0 }, uWarpStrength: { value: 1.0 }, uWarpFrequency: { value: 4.0 }, uWarpSpeed: { value: 1.5 }, uWarpAmplitude: { value: 40.0 }, uBlendAngle: { value: 45.0 }, uBlendSoftness: { value: 0.1 }, uRotationAmount: { value: 180.0 }, uNoiseScale: { value: 1.5 }, uGrainAmount: { value: 0.05 }, uGrainScale: { value: 1.5 }, uGrainAnimated: { value: 1.0 }, uContrast: { value: 1.2 }, uGamma: { value: 1.0 }, uSaturation: { value: 1.1 }, uCenterOffset: { value: new Float32Array([0, 0]) }, uZoom: { value: 1.0 },
+          uTimeSpeed: { value: 0.15 }, uColorBalance: { value: 0.0 }, uWarpStrength: { value: 1.0 }, uWarpFrequency: { value: 4.0 }, uWarpSpeed: { value: 1.5 }, uWarpAmplitude: { value: 40.0 }, uBlendAngle: { value: 45.0 }, uBlendSoftness: { value: 0.1 }, uRotationAmount: { value: 180.0 }, uNoiseScale: { value: 1.5 }, uGrainAmount: { value: 0.05 }, uGrainScale: { value: 1.5 }, uGrainAnimated: { value: 1.0 }, uContrast: { value: 1.2 }, uGamma: { value: 1.0 }, uSaturation: { value: 1.1 }, uCenterOffset: { value: new Float32Array([0, 0]) }, uZoom: { value: 1.0 }, uBlobMode: { value: 0.0 },
           uColor1: { value: new Float32Array([0.796, 0.651, 0.969]) }, uColor2: { value: new Float32Array([0.537, 0.706, 0.980]) }, uColor3: { value: new Float32Array([0.118, 0.118, 0.180]) }
         }
       });
@@ -2703,18 +2949,20 @@
       }
 
       window._updateBgUniforms = function () {
-        const rgb = hexToRgb(currentAccent);
-        program.uniforms.uColor1.value.set(rgb);
-        program.uniforms.uColor2.value.set([rgb[0] * 0.7, rgb[1] * 0.8, rgb[2] * 1.2]);
+        const rgb1 = hexToRgb(bgColor1);
+        const rgb2 = hexToRgb(bgColor2);
+        program.uniforms.uColor1.value.set(rgb1);
+        program.uniforms.uColor2.value.set(rgb2);
+        program.uniforms.uColor3.value.set([rgb2[0] * 0.2, rgb2[1] * 0.2, rgb2[2] * 0.3]);
 
         if (bgStyle === 'wave') {
+          program.uniforms.uBlobMode.value = 0.0;
           program.uniforms.uWarpStrength.value = 15.0;
           program.uniforms.uTimeSpeed.value = 0.8;
           program.uniforms.uWarpFrequency.value = 8.0;
         } else {
-          program.uniforms.uWarpStrength.value = 0.5;
-          program.uniforms.uTimeSpeed.value = 0.1;
-          program.uniforms.uWarpFrequency.value = 2.0;
+          program.uniforms.uBlobMode.value = 1.0;
+          program.uniforms.uTimeSpeed.value = 0.4;
         }
         resize();
       };
