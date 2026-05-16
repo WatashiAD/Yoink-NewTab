@@ -111,8 +111,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: min(30px, 4vh) min(24px, 4vw);
-      gap: clamp(8px, 2.5vh, 20px);
+      padding: clamp(10px, 2vh, 40px) clamp(16px, 4vw, 40px);
+      gap: clamp(10px, 2vh, 24px);
       font-family: 'Rubik', sans-serif;
       position: relative;
       z-index: 10;
@@ -124,8 +124,8 @@
         min-height: 100vh;
         height: auto;
         justify-content: flex-start;
-        padding: 40px 16px 60px;
-        gap: 20px;
+        padding: clamp(30px, 5vh, 60px) clamp(16px, 4vw, 32px);
+        gap: clamp(16px, 3.5vh, 32px);
       }
     }
 
@@ -383,7 +383,7 @@
 
     .clock-time {
       font-family: 'Rubik', sans-serif;
-      font-size: clamp(40px, 10vw, 72px);
+      font-size: clamp(32px, min(8vw, 12vh), 64px);
       font-weight: 700;
       letter-spacing: -2px;
       line-height: 1;
@@ -407,7 +407,8 @@
     }
 
     .header-right {
-      width: clamp(100px, 20vw, 150px);
+      width: clamp(60px, 12vw, 100px);
+      margin-top: -10px;
     }
 
     .header-right img {
@@ -430,7 +431,7 @@
       border: var(--border-width) solid var(--glass-border);
       box-shadow: var(--glass-shadow);
       border-radius: var(--tile-radius);
-      height: clamp(44px, 8vh, 58px);
+      height: clamp(38px, 6vh, 52px);
       padding: 0 clamp(8px, 2vw, 12px) 0 clamp(16px, 4vw, 24px);
       gap: clamp(8px, 2vw, 14px);
       transition: all .3s cubic-bezier(.4, 0, .2, 1);
@@ -656,23 +657,23 @@
     }
 
     .sc-icon {
-      width: clamp(40px, 8vw, 52px);
-      height: clamp(40px, 8vw, 52px);
-      border-radius: 14px;
+      width: clamp(32px, 6vw, 44px);
+      height: clamp(32px, 6vw, 44px);
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .sc-icon .ms {
-      font-size: 26px;
+      font-size: 22px;
       line-height: 1;
       display: block;
     }
 
     .sc-icon svg {
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
       display: block;
     }
 
@@ -686,7 +687,7 @@
 
     .widgets-row {
       display: flex;
-      gap: 16px;
+      gap: clamp(10px, 2vw, 20px);
       width: 100%;
       max-width: min(850px, 95vw);
       flex-wrap: wrap;
@@ -697,21 +698,14 @@
 
     @media(max-width: 1200px) {
       .widgets-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
-        gap: 12px;
-        width: 100%;
-        max-width: 100%;
+        gap: 16px;
       }
       .widgets-row .wcard {
-        flex: unset !important;
-        min-width: 0 !important;
+        flex: 1 1 calc(50% - 16px) !important;
+        min-width: 200px !important;
         width: auto !important;
       }
-      .widgets-row .wcard:nth-child(1) { grid-column: 1; grid-row: 1; }
-      .widgets-row .wcard:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
-      .widgets-row .wcard:nth-child(3) { grid-column: 2; grid-row: 1; }
+      .widgets-row .wcard:nth-child(2) { flex: 1 1 100% !important; }
 
       .topbar {
         position: absolute;
@@ -1460,10 +1454,10 @@
     const DEFAULT_POMO_COLOR = '#fab387';
     const DEFAULT_WEATHER_ICON = 'partly_cloudy_day';
     const DEFAULT_POMO_ICON = 'timer';
-    const DEFAULT_BLUR = 16;
-    const DEFAULT_RADIUS = 20;
-    const DEFAULT_BORDER = 8;
-    const DEFAULT_BORDER_WIDTH = 1;
+    const DEFAULT_BLUR = 24;
+    const DEFAULT_RADIUS = 24;
+    const DEFAULT_BORDER = 0;
+    const DEFAULT_BORDER_WIDTH = 0;
     const DEFAULT_BG = 'gradient';
 
     let shortcuts = JSON.parse(localStorage.getItem('nt-shcuts')) || DEFAULT_SHORTCUTS;
