@@ -1082,6 +1082,173 @@
         transform: translateY(0) scale(1);
       }
     }
+
+    /* Wallpaper Stack Manager */
+    .wp-stack-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .wp-thumb {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: default;
+      transition: border-color 0.2s, transform 0.2s;
+      background: var(--s0);
+    }
+
+    .wp-thumb.is-active {
+      border-color: var(--acc);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 30%, transparent);
+    }
+
+    .wp-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .wp-thumb-del {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background: rgba(17, 17, 27, 0.75);
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Material Symbols Rounded';
+      font-size: 13px;
+      color: var(--red);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+      font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .wp-thumb:hover .wp-thumb-del {
+      opacity: 1;
+    }
+
+    .wp-thumb-del:hover {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .wp-active-badge {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      background: var(--acc);
+      color: var(--crust);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 5px;
+      padding: 2px 5px;
+      font-family: 'Rubik', sans-serif;
+      pointer-events: none;
+    }
+
+    .wp-add-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    .wp-url-input {
+      flex: 1;
+      background: rgba(17, 17, 27, 0.5);
+      border: var(--border-width) solid var(--s1);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--tx);
+      outline: none;
+      font-size: 12px;
+      font-family: 'Rubik', sans-serif;
+    }
+
+    .wp-url-input::placeholder {
+      color: var(--ov0);
+    }
+
+    .wp-add-btn {
+      background: var(--acc);
+      border: none;
+      border-radius: 10px;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: filter 0.2s, transform 0.2s;
+      font-family: 'Material Symbols Rounded';
+      font-size: 20px;
+      color: var(--crust);
+      font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+    }
+
+    .wp-add-btn:hover {
+      filter: brightness(1.12);
+      transform: scale(1.06);
+    }
+
+    .wp-upload-label {
+      background: rgba(17, 17, 27, 0.5);
+      border: var(--border-width) solid var(--s1);
+      border-radius: 10px;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s, background 0.2s;
+      font-family: 'Material Symbols Rounded';
+      font-size: 20px;
+      color: var(--sub1);
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+    }
+
+    .wp-upload-label:hover {
+      border-color: var(--acc);
+      background: var(--s0);
+    }
+
+    .wp-empty {
+      font-size: 12px;
+      color: var(--ov0);
+      text-align: center;
+      padding: 14px 0;
+      font-style: italic;
+    }
+
+    .wp-info {
+      font-size: 11px;
+      color: var(--ov1);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
   </style>
 </head>
 
@@ -1410,15 +1577,28 @@
           <button class="pbtn set-bg" data-style="wave" style="flex:1;">Wave</button>
           <button class="pbtn set-bg" data-style="image" style="flex:1;">Image</button>
         </div>
-        <div style="display:flex;gap:8px; align-items:center;">
-          <input type="text" id="bgUrlInput" placeholder="Paste Image URL here…"
-            style="flex:1;background:rgba(17,17,27,0.5);border:var(--border-width) solid var(--s1);border-radius:12px;padding:10px 14px;color:var(--tx);outline:none;font-size:12px;display:none;">
-          <label id="bgUploadLabel"
-            style="display:none; cursor:pointer; background:rgba(17,17,27,0.5); border:var(--border-width) solid var(--s1); border-radius:12px; padding:8px; color:var(--tx); transition:all .2s;">
-            <span class="ms msf" style="font-size:20px;">cloud_upload</span>
-            <input type="file" id="bgFileInput" accept="image/*" style="display:none;">
+
+        <!-- Add wallpaper row: always visible so user never has to click Image first -->
+        <div class="wp-add-row" id="wpAddRowAlways">
+          <input class="wp-url-input" id="wpUrlInput" placeholder="Paste image URL…" />
+          <button class="wp-add-btn" id="wpAddUrl" title="Add URL">add</button>
+          <label class="wp-upload-label" title="Upload image">
+            cloud_upload
+            <input type="file" id="wpFileInput" accept="image/*" style="display:none;" multiple>
           </label>
         </div>
+
+        <!-- Wallpaper thumbnail grid – shown only in image mode -->
+        <div id="wpStackSection" style="display:none;">
+          <div class="wp-stack-grid" id="wpGrid"></div>
+          <div class="wp-info">
+            <span class="ms" style="font-size:14px;">shuffle</span>
+            A random wallpaper is shown each time you open a new tab.
+          </div>
+        </div>
+        <!-- Legacy hidden inputs kept for compat -->
+        <input type="text" id="bgUrlInput" style="display:none;">
+        <label id="bgUploadLabel" style="display:none;"><input type="file" id="bgFileInput" accept="image/*" style="display:none;"></label>
       </div>
     </div>
 
@@ -1480,6 +1660,8 @@
     let borderWidth = parseInt(localStorage.getItem('nt-border-w')) || DEFAULT_BORDER_WIDTH;
     let bgStyle = localStorage.getItem('nt-bg') || DEFAULT_BG;
     let bgUrl = localStorage.getItem('nt-bg-url') || '';
+    let bgWallpapers = []; // Loaded async from IndexedDB
+    let activeBgUrl = '';
     let clock24h = localStorage.getItem('nt-24h') === 'true';
     let clockShowSec = localStorage.getItem('nt-sec') === 'true';
     let weatherUnit = localStorage.getItem('nt-w-unit') || 'C';
@@ -1507,11 +1689,94 @@
     function saveVignette() { localStorage.setItem('nt-vignette', vignetteAmt); }
     function saveBorderWidth() { localStorage.setItem('nt-border-w', borderWidth); }
 
+    // ─── IndexedDB for wallpapers (no size limit, works with large photos) ───
+    const _WP_DB = 'nt-wp-db', _WP_ST = 'wallpapers';
+    let _wpDb = null;
+    function wpOpenDb() {
+      if (_wpDb) return Promise.resolve(_wpDb);
+      return new Promise((res, rej) => {
+        const r = indexedDB.open(_WP_DB, 1);
+        r.onupgradeneeded = e => e.target.result.createObjectStore(_WP_ST, { keyPath: 'k' });
+        r.onsuccess = e => { _wpDb = e.target.result; res(_wpDb); };
+        r.onerror = () => rej(r.error);
+      });
+    }
+    function wpDbLoad() {
+      return wpOpenDb().then(db => new Promise((res, rej) => {
+        const r = db.transaction(_WP_ST).objectStore(_WP_ST).getAll();
+        r.onsuccess = () => res(r.result.sort((a, b) => a.k - b.k).map(x => x.url));
+        r.onerror = () => rej(r.error);
+      }));
+    }
+    function wpDbSave(urls) {
+      return wpOpenDb().then(db => new Promise((res, rej) => {
+        const tx = db.transaction(_WP_ST, 'readwrite');
+        const st = tx.objectStore(_WP_ST);
+        st.clear();
+        urls.forEach((url, i) => st.put({ k: i, url }));
+        tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+      }));
+    }
+    function wpDbClear() {
+      return wpOpenDb().then(db => new Promise((res, rej) => {
+        const tx = db.transaction(_WP_ST, 'readwrite');
+        tx.objectStore(_WP_ST).clear();
+        tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+      }));
+    }
+    function saveWallpapers() {
+      wpDbSave(bgWallpapers).catch(e => console.warn('WP save failed:', e));
+      localStorage.removeItem('nt-bg-wallpapers');
+    }
+
+    // ─── Image compression: resize to max 1920px, JPEG quality 0.78 ───
+    function compressImg(file) {
+      return new Promise(resolve => {
+        const MAX = 1920, Q = 0.78;
+        const fr = new FileReader();
+        fr.onload = ev => {
+          const img = new Image();
+          img.onload = () => {
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const cv = document.createElement('canvas');
+            cv.width = w; cv.height = h;
+            cv.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(cv.toDataURL('image/jpeg', Q));
+          };
+          img.onerror = () => resolve(ev.target.result);
+          img.src = ev.target.result;
+        };
+        fr.readAsDataURL(file);
+      });
+    }
+
+    // ─── Wallpaper init: pick active wallpaper after IDB loads ───
+    function initWallpaper() {
+      if (bgStyle !== 'image' || bgWallpapers.length === 0) {
+        activeBgUrl = bgUrl || '';
+        return;
+      }
+      const tabLocked = sessionStorage.getItem('nt-tab-wp');
+      if (tabLocked && bgWallpapers.includes(tabLocked)) {
+        activeBgUrl = tabLocked;
+        return;
+      }
+      const lastUrl = localStorage.getItem('nt-active-wp') || '';
+      const candidates = bgWallpapers.filter(u => u !== lastUrl);
+      const pool = candidates.length > 0 ? candidates : bgWallpapers;
+      activeBgUrl = pool[Math.floor(Math.random() * pool.length)];
+      try { localStorage.setItem('nt-active-wp', activeBgUrl.startsWith('data:') ? 'data:placeholder' : activeBgUrl); } catch(e) {}
+      sessionStorage.setItem('nt-tab-wp', activeBgUrl);
+    }
+
     document.documentElement.style.setProperty('--acc', currentAccent);
     document.documentElement.style.setProperty('--weather-color', weatherColor);
     document.documentElement.style.setProperty('--pomo-color', pomoColor);
     document.documentElement.style.setProperty('--blur-amount', blurAmt + 'px');
-    document.documentElement.style.setProperty('--bg-url', bgUrl ? `url(${bgUrl})` : 'none');
     document.documentElement.style.setProperty('--tile-radius', tileRadius + 'px');
     document.documentElement.style.setProperty('--glass-border', `rgba(205, 214, 244, ${borderAmt / 100})`);
     if (document.getElementById('bg-vignette')) {
@@ -2162,14 +2427,138 @@
       localStorage.setItem('nt-border-w', borderWidth);
     });
 
-    // Apply accent color to active background style button
+    // ─── Wallpaper Stack Manager ───────────────────────────────────────────
+
+    function applyActiveWallpaper() {
+      const layer = document.getElementById('bg-image-layer');
+      const container = document.getElementById('grainient-container');
+      if (!layer) return;
+      container.style.display = 'none';
+      layer.classList.add('visible');
+      layer.style.opacity = '1';
+      layer.style.backgroundImage = activeBgUrl ? `url("${activeBgUrl}")` : 'none';
+      layer.style.filter = `blur(${blurAmt}px) brightness(${brightAmt / 100})`;
+    }
+
+    function renderWpGrid() {
+      const grid = document.getElementById('wpGrid');
+      grid.innerHTML = '';
+      if (bgWallpapers.length === 0) {
+        grid.innerHTML = '<div class="wp-empty" style="grid-column:1/-1;">No wallpapers added yet.</div>';
+        return;
+      }
+      bgWallpapers.forEach((url, idx) => {
+        const isActive = url === activeBgUrl;
+        const card = document.createElement('div');
+        card.className = 'wp-thumb' + (isActive ? ' is-active' : '');
+        card.title = 'Click to use this wallpaper';
+        card.style.cursor = 'pointer';
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Wallpaper ' + (idx + 1);
+        img.onerror = () => { card.style.background = 'var(--s1)'; img.style.display = 'none'; };
+        card.appendChild(img);
+
+        if (isActive) {
+          const badge = document.createElement('div');
+          badge.className = 'wp-active-badge';
+          badge.textContent = 'Active';
+          card.appendChild(badge);
+        }
+
+        card.addEventListener('click', () => {
+          activeBgUrl = url;
+          localStorage.setItem('nt-active-wp', url);
+          sessionStorage.setItem('nt-tab-wp', url);
+          applyActiveWallpaper();
+          renderWpGrid();
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'wp-thumb-del';
+        delBtn.textContent = 'close';
+        delBtn.title = 'Remove';
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          card.style.transition = 'opacity 0.25s, transform 0.25s';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.85)';
+          setTimeout(() => {
+            bgWallpapers.splice(idx, 1);
+            saveWallpapers();
+            if (activeBgUrl === url) {
+              activeBgUrl = bgWallpapers.length > 0 ? bgWallpapers[Math.floor(Math.random() * bgWallpapers.length)] : '';
+            }
+            updateBgButtons();
+          }, 250);
+        });
+        card.appendChild(delBtn);
+        grid.appendChild(card);
+      });
+    }
+
+    function addWallpaperUrl(url) {
+      url = url.trim();
+      if (!url) return;
+      if (bgWallpapers.includes(url)) return;
+      bgWallpapers.push(url);
+      activeBgUrl = url;
+      localStorage.setItem('nt-active-wp', url);
+      sessionStorage.setItem('nt-tab-wp', url);
+      saveWallpapers();
+      bgStyle = 'image';
+      saveBg();
+      applyActiveWallpaper();
+      updateBgButtons();
+    }
+
+    document.getElementById('wpAddUrl').addEventListener('click', () => {
+      const inp = document.getElementById('wpUrlInput');
+      addWallpaperUrl(inp.value);
+      inp.value = '';
+    });
+
+    document.getElementById('wpUrlInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('wpAddUrl').click();
+    });
+
+    document.getElementById('wpFileInput').addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+      let firstNewUrl = null;
+      let pending = files.length;
+      files.forEach(file => {
+        compressImg(file).then(dataUrl => {
+          if (!bgWallpapers.includes(dataUrl)) {
+            bgWallpapers.push(dataUrl);
+            if (!firstNewUrl) firstNewUrl = dataUrl;
+          }
+          pending--;
+          if (pending === 0) {
+            if (firstNewUrl) {
+              activeBgUrl = firstNewUrl;
+              sessionStorage.setItem('nt-tab-wp', firstNewUrl);
+              try { localStorage.setItem('nt-active-wp', firstNewUrl.startsWith('data:') ? 'data:placeholder' : firstNewUrl); } catch(e) {}
+            }
+            saveWallpapers();
+            bgStyle = 'image';
+            saveBg();
+            applyActiveWallpaper();
+            updateBgButtons();
+          }
+        });
+      });
+      e.target.value = '';
+    });
+
+    // ─── Background buttons & apply logic ─────────────────────────────────
+
     function updateBgButtons() {
-      const input = document.getElementById('bgUrlInput');
-      const upload = document.getElementById('bgUploadLabel');
       const isImg = bgStyle === 'image';
-      input.style.display = isImg ? 'block' : 'none';
-      upload.style.display = isImg ? 'block' : 'none';
-      input.value = bgUrl.startsWith('data:') ? 'Local Image Uploaded' : bgUrl;
+      const stackSection = document.getElementById('wpStackSection');
+      stackSection.style.display = isImg ? 'block' : 'none';
+      if (isImg) renderWpGrid();
 
       document.querySelectorAll('.set-bg').forEach(btn => {
         if (btn.dataset.style === bgStyle) {
@@ -2185,11 +2574,12 @@
 
       const container = document.getElementById('grainient-container');
       const layer = document.getElementById('bg-image-layer');
-      if (bgStyle === 'image') {
+      if (isImg) {
+        const src = activeBgUrl || (bgWallpapers.length > 0 ? bgWallpapers[0] : '');
         container.style.display = 'none';
         layer.classList.add('visible');
         layer.style.opacity = '1';
-        layer.style.backgroundImage = bgUrl ? `url("${bgUrl}")` : 'none';
+        layer.style.backgroundImage = src ? `url("${src}")` : 'none';
         layer.style.filter = `blur(${blurAmt}px) brightness(${brightAmt / 100})`;
       } else {
         container.style.display = 'block';
@@ -2199,25 +2589,6 @@
       }
     }
 
-    document.getElementById('bgUrlInput').addEventListener('input', (e) => {
-      bgUrl = e.target.value;
-      saveBgUrl();
-      updateBgButtons();
-    });
-
-    document.getElementById('bgFileInput').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        bgUrl = event.target.result;
-        saveBgUrl();
-        document.documentElement.style.setProperty('--bg-url', `url(${bgUrl})`);
-        document.getElementById('bgUrlInput').value = 'Local Image Uploaded';
-      };
-      reader.readAsDataURL(file);
-    });
-
     // Background style buttons
     document.querySelectorAll('.set-bg').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2226,7 +2597,30 @@
         updateBgButtons();
       });
     });
-    updateBgButtons();
+
+    // ─── Async IDB init: load wallpapers then initialise background ───
+    wpDbLoad()
+      .then(urls => {
+        if (urls.length === 0) {
+          const legacy = JSON.parse(localStorage.getItem('nt-bg-wallpapers') || '[]');
+          if (legacy.length > 0) {
+            bgWallpapers = legacy;
+            wpDbSave(legacy).catch(() => {});
+            localStorage.removeItem('nt-bg-wallpapers');
+          }
+        } else {
+          bgWallpapers = urls;
+        }
+        initWallpaper();
+        document.documentElement.style.setProperty('--bg-url', activeBgUrl ? `url(${activeBgUrl})` : 'none');
+        updateBgButtons();
+      })
+      .catch(() => {
+        bgWallpapers = JSON.parse(localStorage.getItem('nt-bg-wallpapers') || '[]');
+        initWallpaper();
+        document.documentElement.style.setProperty('--bg-url', activeBgUrl ? `url(${activeBgUrl})` : 'none');
+        updateBgButtons();
+      });
 
     // Reset
     document.getElementById('resetAll').addEventListener('click', () => {
@@ -2244,6 +2638,10 @@
       brightAmt = 80; saveBright();
       bgStyle = DEFAULT_BG; saveBg();
       bgUrl = ''; saveBgUrl();
+      bgWallpapers = []; saveWallpapers(); wpDbClear().catch(() => {});
+      activeBgUrl = '';
+      localStorage.removeItem('nt-active-wp');
+      sessionStorage.removeItem('nt-tab-wp');
       document.getElementById('blurSlider').value = DEFAULT_BLUR;
       document.getElementById('radiusSlider').value = DEFAULT_RADIUS;
       document.getElementById('borderSlider').value = DEFAULT_BORDER;
