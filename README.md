@@ -28,4 +28,4 @@ Since this is a standalone HTML file rather than a packaged extension, you have 
 - Material Symbols Rounded
 
 ## 📄 License
-Licensed under the Apache License 2.0. Feel free to fork and customize!
+Licensed under the Apache License 2.0. Feel free to yoink! and customize!
