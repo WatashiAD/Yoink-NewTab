@@ -57,9 +57,28 @@
 
 ## Screenshots
 
-<p align="center">
-  <em>Add a screenshot of your setup here</em>
-</p>
+<table>
+  <tr>
+    <td align="center">
+      <strong>Solid</strong><br />
+      <img src="screenshot-solid.png" alt="Solid background" width="400" />
+    </td>
+    <td align="center">
+      <strong>Gradient</strong><br />
+      <img src="screenshot-dynamic.png" alt="Gradient background" width="400" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Wave Shader</strong><br />
+      <img src="screenshot-wave.png" alt="Wave shader background" width="400" />
+    </td>
+    <td align="center">
+      <strong>Media Wallpaper</strong><br />
+      <img src="screenshot-media.png" alt="Media wallpaper background" width="400" />
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -67,7 +86,7 @@
 
 ### Quick Start
 
-1. **Download** the [`yoink-newtab.html`](yoink-newtab.html) file
+1. **Download** the [`index.html`](index.html) file
 2. **Open** it in any modern browser (Chrome, Firefox, Edge, Brave)
 
 ### Set as New Tab Page
@@ -117,10 +136,14 @@ Access the settings pane by clicking the **settings** icon in the top-right corn
 
 ```
 Yoink-NewTab/
-├── yoink-newtab.html   # Single-file application (all HTML, CSS, JS)
-├── bongo-cat.gif       # Animated header companion
-├── README.md           # Project documentation
-├── LICENSE             # Apache 2.0
+├── index.html              # Single-file application (all HTML, CSS, JS)
+├── bongo-cat.gif           # Animated header companion
+├── screenshot-solid.png    # Solid background preview
+├── screenshot-dynamic.png  # Gradient background preview
+├── screenshot-wave.png     # Wave shader background preview
+├── screenshot-media.png    # Media wallpaper preview
+├── README.md               # Project documentation
+├── LICENSE                 # Apache 2.0
 └── .gitignore
 ```
 
