@@ -572,20 +572,19 @@
     }
 
     .sc-viewport {
-      overflow-x: auto;
-      overflow-y: hidden;
+      position: relative;
+      overflow: hidden;
       width: 100%;
       margin: 0;
       padding: 0;
       border-radius: 20px;
       background: transparent;
       box-shadow: none;
-      scrollbar-width: none;
     }
-    .sc-viewport::-webkit-scrollbar { display: none; }
 
     .sc-track {
       display: flex;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .sc-page-slot {
@@ -593,6 +592,8 @@
       gap: 14px;
       padding: 10px;
       flex-shrink: 0;
+      width: 100%;
+      justify-content: center;
     }
 
     @media(max-width: 1200px) {
@@ -1328,6 +1329,7 @@
       <div class="sc-header">
         <div class="sec-label">Quick access</div>
         <div class="sc-header-right" style="display:flex;align-items:center;gap:14px;">
+          <div class="sc-page-dots" id="sc-page-dots"></div>
           <button class="sc-edit-btn" id="editBtn">
             <span class="ms">edit</span><span id="editLbl">Edit</span>
           </button>
@@ -1669,6 +1671,7 @@
         root.style.width = '100%';
         root.style.height = '';
       }
+      if (typeof renderShortcuts === 'function') renderShortcuts();
     }
 
     // Logic for New Tab
@@ -1816,6 +1819,7 @@
     setTimeout(() => { tick(); updatePomoDisplay(); applyWeatherPomo(); }, 100);
 
     let editMode = false, selIcon = ICONS[0], editingIdx = null;
+    let currentPage = 0;
 
     function applyTileWidth() {
       const w = Math.round(85 + (tileColumns - 3) * 55 / 7);
@@ -1823,16 +1827,94 @@
     }
     applyTileWidth();
 
+    function getTilesPerPage() {
+      const vp = document.getElementById('sc-viewport');
+      if (!vp) return 1;
+      const vpWidth = vp.clientWidth || vp.getBoundingClientRect().width || 850;
+      const tileWidth = Math.round(85 + (tileColumns - 3) * 55 / 7);
+      const gap = 14;
+      const padding = 20; // 10px on each side
+      
+      const availableWidth = vpWidth - padding;
+      const maxTiles = Math.floor((availableWidth + gap) / (tileWidth + gap));
+      return Math.max(1, maxTiles);
+    }
+
+    function goToPage(pageIdx) {
+      const track = document.getElementById('sc-track');
+      const dotsContainer = document.getElementById('sc-page-dots');
+      if (!track) return;
+      
+      const vp = document.getElementById('sc-viewport');
+      if (vp) vp.scrollLeft = 0;
+      
+      const tilesPerPage = getTilesPerPage();
+      const totalItems = shortcuts.length + (editMode ? 1 : 0);
+      const totalPages = Math.ceil(totalItems / tilesPerPage);
+      
+      currentPage = Math.max(0, Math.min(pageIdx, totalPages - 1));
+      
+      track.style.transform = `translateX(-${currentPage * 100}%)`;
+      
+      if (dotsContainer) {
+        const dots = dotsContainer.querySelectorAll('.sc-dot');
+        dots.forEach((dot, idx) => {
+          if (idx === currentPage) {
+            dot.classList.add('active');
+          } else {
+            dot.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    function renderDots(totalPages) {
+      const dotsContainer = document.getElementById('sc-page-dots');
+      if (!dotsContainer) return;
+      dotsContainer.innerHTML = '';
+      
+      if (totalPages <= 1) {
+        return;
+      }
+      
+      for (let i = 0; i < totalPages; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'sc-dot' + (i === currentPage ? ' active' : '');
+        dot.addEventListener('click', () => {
+          goToPage(i);
+        });
+        dotsContainer.appendChild(dot);
+      }
+    }
+
     function renderShortcuts() {
       const track = document.getElementById('sc-track');
+      if (!track) return;
       track.innerHTML = '';
-      const slot = document.createElement('div');
-      slot.className = 'sc-page-slot' + (editMode ? ' edit-mode' : '');
+      
+      const tilesPerPage = getTilesPerPage();
+      const totalItems = shortcuts.length + (editMode ? 1 : 0);
+      const totalPages = Math.ceil(totalItems / tilesPerPage);
+      
+      if (currentPage >= totalPages) {
+        currentPage = Math.max(0, totalPages - 1);
+      }
+      
+      let currentSlot = null;
+      let itemsInCurrentPage = 0;
+      
       for (let i = 0; i < shortcuts.length; i++) {
+        if (itemsInCurrentPage === 0 || itemsInCurrentPage >= tilesPerPage) {
+          currentSlot = document.createElement('div');
+          currentSlot.className = 'sc-page-slot' + (editMode ? ' edit-mode' : '');
+          track.appendChild(currentSlot);
+          itemsInCurrentPage = 0;
+        }
+        
         const s = shortcuts[i];
         const a = document.createElement('a');
         a.className = 'shortcut sc-enter';
-        a.style.animationDelay = `${i * 0.05}s`;
+        a.style.animationDelay = `${(i % tilesPerPage) * 0.05}s`;
         a.dataset.idx = i;
         if (!editMode) { a.href = s.url; }
         if (editMode) {
@@ -1852,22 +1934,117 @@
         const iclr = syncShortcuts ? 'var(--acc)' : s.color;
         const ibg = syncShortcuts ? 'color-mix(in srgb, var(--acc) 15%, transparent)' : `${s.color}22`;
         a.innerHTML = `<div class="sc-icon" style="background:${ibg}">${s.icon === 'custom' && s.customIcon ? '<div style="width:26px;height:26px;color:' + iclr + '">' + s.customIcon + '</div>' : '<span class="ms msf" style="color:' + iclr + '">' + s.icon + '</span>'}</div><div class="sc-name">${s.name}</div>${editMode ? '<span class="ms sc-del" data-idx="' + i + '">close</span>' : ''}`;
-        if (editMode) a.style.position = 'relative';
-        slot.appendChild(a);
+        
+        currentSlot.appendChild(a);
+        itemsInCurrentPage++;
       }
+      
       if (editMode) {
+        if (itemsInCurrentPage === 0 || itemsInCurrentPage >= tilesPerPage) {
+          currentSlot = document.createElement('div');
+          currentSlot.className = 'sc-page-slot edit-mode';
+          track.appendChild(currentSlot);
+          itemsInCurrentPage = 0;
+        }
+        
         const add = document.createElement('div');
         add.className = 'shortcut sc-add-btn';
         add.innerHTML = `<span class="ms msf" style="color:var(--s2);font-size:26px;">add</span><div class="sc-name">Add</div>`;
-        slot.appendChild(add);
+        currentSlot.appendChild(add);
+        itemsInCurrentPage++;
       }
-      track.appendChild(slot);
+      
+      renderDots(totalPages);
+      goToPage(currentPage);
     }
 
-    document.getElementById('sc-viewport').addEventListener('wheel', (e) => {
-      e.preventDefault();
-      document.getElementById('sc-viewport').scrollBy({ left: e.deltaY + e.deltaX, behavior: 'auto' });
-    }, { passive: false });
+    // Scroll wheel page navigation with cooldown and accumulator
+    (function() {
+      let lastPageChangeTime = 0;
+      let scrollAccumulator = 0;
+      
+      document.getElementById('sc-viewport').addEventListener('wheel', (e) => {
+        e.preventDefault();
+        
+        const tilesPerPage = getTilesPerPage();
+        const totalItems = shortcuts.length + (editMode ? 1 : 0);
+        const totalPages = Math.ceil(totalItems / tilesPerPage);
+        
+        const now = Date.now();
+        const delta = e.deltaY + e.deltaX;
+        
+        if ((delta > 0 && scrollAccumulator < 0) || (delta < 0 && scrollAccumulator > 0)) {
+          scrollAccumulator = 0;
+        }
+        
+        scrollAccumulator += delta;
+        
+        if (now - lastPageChangeTime > 400 && Math.abs(scrollAccumulator) >= 60) {
+          if (scrollAccumulator > 0) {
+            if (currentPage < totalPages - 1) {
+              goToPage(currentPage + 1);
+              lastPageChangeTime = now;
+              scrollAccumulator = 0;
+            }
+          } else {
+            if (currentPage > 0) {
+              goToPage(currentPage - 1);
+              lastPageChangeTime = now;
+              scrollAccumulator = 0;
+            }
+          }
+        }
+      }, { passive: false });
+    })();
+
+    // Swipe support for mobile layout
+    (function () {
+      const vp = document.getElementById('sc-viewport');
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let isSwiping = false;
+
+      vp.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        isSwiping = true;
+      }, { passive: true });
+
+      vp.addEventListener('touchmove', (e) => {
+        if (!isSwiping) return;
+        
+        const tilesPerPage = getTilesPerPage();
+        const totalItems = shortcuts.length + (editMode ? 1 : 0);
+        const totalPages = Math.ceil(totalItems / tilesPerPage);
+        if (totalPages <= 1) return;
+
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      vp.addEventListener('touchend', (e) => {
+        if (!isSwiping) return;
+        isSwiping = false;
+        
+        const tilesPerPage = getTilesPerPage();
+        const totalItems = shortcuts.length + (editMode ? 1 : 0);
+        const totalPages = Math.ceil(totalItems / tilesPerPage);
+        if (totalPages <= 1) return;
+
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+          if (dx < 0 && currentPage < totalPages - 1) {
+            goToPage(currentPage + 1);
+          } else if (dx > 0 && currentPage > 0) {
+            goToPage(currentPage - 1);
+          }
+        }
+      }, { passive: true });
+    })();
 
     document.getElementById('editBtn').addEventListener('click', () => {
       editMode = !editMode;
@@ -1877,10 +2054,10 @@
       if (editMode) {
         document.getElementById('sc-viewport').scrollIntoView({ behavior: 'smooth', block: 'start' });
         setTimeout(() => {
-          const addBtn = document.querySelector('.sc-add-btn');
-          if (addBtn) {
-            addBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
-          }
+          const tilesPerPage = getTilesPerPage();
+          const totalItems = shortcuts.length + 1;
+          const totalPages = Math.ceil(totalItems / tilesPerPage);
+          goToPage(totalPages - 1);
         }, 100);
       }
     });
@@ -2505,6 +2682,7 @@
       saveTileColumns();
       applyTileWidth();
       renderShortcuts();
+      fitToScreen();
     });
 
     document.getElementById('blurSlider').value = blurAmt;
@@ -3085,6 +3263,7 @@
       renderShortcuts(); renderTasks();
       applyClockColor(); updateBgButtons();
       applyWeatherPomo();
+      fitToScreen();
     });
 
     document.getElementById('exportBtn').addEventListener('click', () => {
