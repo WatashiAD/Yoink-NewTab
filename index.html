@@ -572,34 +572,30 @@
     }
 
     .sc-viewport {
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
       width: 100%;
       margin: 0;
       padding: 0;
       border-radius: 20px;
       background: transparent;
       box-shadow: none;
+      scrollbar-width: none;
     }
+    .sc-viewport::-webkit-scrollbar { display: none; }
 
     .sc-track {
       display: flex;
-      transition: transform .4s cubic-bezier(.4, 0, .2, 1);
     }
 
     .sc-page-slot {
-      flex-shrink: 0;
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(var(--tile-cols, 6), 1fr);
+      display: flex;
       gap: 14px;
       padding: 10px;
+      flex-shrink: 0;
     }
 
     @media(max-width: 1200px) {
-      .sc-page-slot {
-        grid-template-columns: repeat(4, 1fr);
-      }
-
       .header-row {
         gap: 20px;
         align-items: center;
@@ -631,6 +627,8 @@
       align-items: center;
       justify-content: center;
       aspect-ratio: 1 / 1;
+      width: var(--tile-w, 88px);
+      height: var(--tile-w, 88px);
       gap: 8px;
       padding: 10px;
       background: var(--tile-bg);
@@ -1229,7 +1227,6 @@
       .header-right { width: clamp(60px, 15vw, 100px); }
       .widgets-row { grid-template-columns: 1fr; }
       .widgets-row .wcard { min-width: 0 !important; }
-      .sc-page-slot { grid-template-columns: repeat(3, 1fr); gap: 8px; }
       .sc-section { max-width: 100%; }
       .footer { gap: 14px; }
       .modal { width: min(340px, 92vw); padding: 24px; }
@@ -1239,13 +1236,11 @@
       .root { padding: 18px 10px 28px; gap: 8px; }
       .header-right { display: none; }
       .clock-time { font-size: clamp(22px, 6vw, 36px); }
-      .sc-page-slot { gap: 6px; }
       .wcard { padding: 10px 14px; }
     }
 
     @media (max-width: 380px) {
       .root { padding: 14px 8px 20px; gap: 6px; }
-      .sc-page-slot { grid-template-columns: repeat(2, 1fr); gap: 5px; }
     }
 
     @media (min-width: 1400px) {
@@ -1333,7 +1328,6 @@
       <div class="sc-header">
         <div class="sec-label">Quick access</div>
         <div class="sc-header-right" style="display:flex;align-items:center;gap:14px;">
-          <div class="sc-page-dots" id="sc-dots"></div>
           <button class="sc-edit-btn" id="editBtn">
             <span class="ms">edit</span><span id="editLbl">Edit</span>
           </button>
@@ -1630,7 +1624,7 @@
         style="background:rgba(17,17,27,0.5);border:var(--border-width) solid var(--s1);border-radius:12px;padding:10px 14px;color:var(--tx);outline:none;width:100%;margin-bottom:12px;font-size:14px;"
         id="m-url" placeholder="URL (e.g. https://notion.so)" />
       <div id="icon-picker"
-        style="display:flex;flex-wrap:wrap;gap:7px;max-height:100px;overflow-y:auto;margin-bottom:16px;"></div>
+        style="display:flex;flex-wrap:wrap;gap:7px;max-height:120px;overflow-y:auto;margin-bottom:16px;"></div>
       <div style="display:flex;gap:12px;justify-content:flex-end;">
         <button class="pbtn" id="mcancel" style="flex:1;">Cancel</button>
         <button class="pbtn primary" id="mconfirm" style="flex:1; background:var(--acc); color:var(--crust);">Pin
@@ -1766,7 +1760,6 @@
     document.documentElement.style.setProperty('--blur-amount', blurAmt + 'px');
     document.documentElement.style.setProperty('--bg-url', bgUrl ? `url(${bgUrl})` : 'none');
     document.documentElement.style.setProperty('--tile-radius', tileRadius + 'px');
-    document.documentElement.style.setProperty('--tile-cols', tileColumns);
     document.documentElement.style.setProperty('--glass-border', `rgba(205, 214, 244, ${borderAmt / 100})`);
     applyTileStyle();
     if (document.getElementById('bg-vignette')) {
@@ -1822,73 +1815,58 @@
     applyWeatherPomo();
     setTimeout(() => { tick(); updatePomoDisplay(); applyWeatherPomo(); }, 100);
 
-    let PER_PAGE = tileColumns * 2;
-    let editMode = false, scPage = 0, selIcon = ICONS[0], editingIdx = null;
+    let editMode = false, selIcon = ICONS[0], editingIdx = null;
 
-    function totalPages() { return Math.max(1, Math.ceil((shortcuts.length + (editMode ? 1 : 0)) / PER_PAGE)); }
+    function applyTileWidth() {
+      const w = Math.round(85 + (tileColumns - 3) * 55 / 7);
+      document.documentElement.style.setProperty('--tile-w', w + 'px');
+    }
+    applyTileWidth();
 
     function renderShortcuts() {
       const track = document.getElementById('sc-track');
-      const dotsEl = document.getElementById('sc-dots');
-      track.innerHTML = ''; dotsEl.innerHTML = '';
-      const tp = totalPages();
-      if (scPage >= tp) scPage = tp - 1;
-      for (let p = 0; p < tp; p++) {
-        const slot = document.createElement('div');
-        slot.className = 'sc-page-slot' + (editMode ? ' edit-mode' : '');
-        const start = p * PER_PAGE, end = Math.min(start + PER_PAGE, shortcuts.length);
-        for (let i = start; i < end; i++) {
-          const s = shortcuts[i];
-          const a = document.createElement('a');
-          a.className = 'shortcut sc-enter';
-          a.style.animationDelay = `${(i % PER_PAGE) * 0.05}s`;
-          a.dataset.idx = i;
-          if (!editMode) { a.href = s.url; }
-          if (editMode) {
-            a.draggable = true;
-            a.style.position = 'relative';
-            a.addEventListener('click', (function (i, sc) {
-              return function (e) {
-                if (e.target.closest('.sc-del')) return;
-                e.preventDefault();
-                e.stopPropagation();
-                editingIdx = i;
-                selIcon = sc.customIcon ? { i: 'custom', customIcon: sc.customIcon, c: sc.color } : ICONS.find(ic => ic.i === sc.icon) || ICONS[0];
-                openModal(sc);
-              };
-            })(i, s));
-          }
-          const iclr = syncShortcuts ? 'var(--acc)' : s.color;
-          const ibg = syncShortcuts ? 'color-mix(in srgb, var(--acc) 15%, transparent)' : `${s.color}22`;
-          a.innerHTML = `<div class="sc-icon" style="background:${ibg}">${s.icon === 'custom' && s.customIcon ? '<div style="width:26px;height:26px;color:' + iclr + '">' + s.customIcon + '</div>' : '<span class="ms msf" style="color:' + iclr + '">' + s.icon + '</span>'}</div><div class="sc-name">${s.name}</div>${editMode ? '<span class="ms sc-del" data-idx="' + i + '">close</span>' : ''}`;
-          if (editMode) a.style.position = 'relative';
-          slot.appendChild(a);
+      track.innerHTML = '';
+      const slot = document.createElement('div');
+      slot.className = 'sc-page-slot' + (editMode ? ' edit-mode' : '');
+      for (let i = 0; i < shortcuts.length; i++) {
+        const s = shortcuts[i];
+        const a = document.createElement('a');
+        a.className = 'shortcut sc-enter';
+        a.style.animationDelay = `${i * 0.05}s`;
+        a.dataset.idx = i;
+        if (!editMode) { a.href = s.url; }
+        if (editMode) {
+          a.draggable = true;
+          a.style.position = 'relative';
+          a.addEventListener('click', (function (i, sc) {
+            return function (e) {
+              if (e.target.closest('.sc-del')) return;
+              e.preventDefault();
+              e.stopPropagation();
+              editingIdx = i;
+              selIcon = sc.customIcon ? { i: 'custom', customIcon: sc.customIcon, c: sc.color } : ICONS.find(ic => ic.i === sc.icon) || ICONS[0];
+              openModal(sc);
+            };
+          })(i, s));
         }
-        if (editMode && p === tp - 1 && (end - start) < PER_PAGE) {
-          const add = document.createElement('div');
-          add.className = 'shortcut sc-add-btn';
-          add.innerHTML = `<span class="ms msf" style="color:var(--s2);font-size:26px;">add</span><div class="sc-name">Add</div>`;
-          slot.appendChild(add);
-        }
-        track.appendChild(slot);
-        const dot = document.createElement('div');
-        dot.className = 'sc-dot' + (p === scPage ? ' active' : '');
-        dot.addEventListener('click', () => { scPage = p; applyPage(); renderDots(); });
-        dotsEl.appendChild(dot);
+        const iclr = syncShortcuts ? 'var(--acc)' : s.color;
+        const ibg = syncShortcuts ? 'color-mix(in srgb, var(--acc) 15%, transparent)' : `${s.color}22`;
+        a.innerHTML = `<div class="sc-icon" style="background:${ibg}">${s.icon === 'custom' && s.customIcon ? '<div style="width:26px;height:26px;color:' + iclr + '">' + s.customIcon + '</div>' : '<span class="ms msf" style="color:' + iclr + '">' + s.icon + '</span>'}</div><div class="sc-name">${s.name}</div>${editMode ? '<span class="ms sc-del" data-idx="' + i + '">close</span>' : ''}`;
+        if (editMode) a.style.position = 'relative';
+        slot.appendChild(a);
       }
-      applyPage();
+      if (editMode) {
+        const add = document.createElement('div');
+        add.className = 'shortcut sc-add-btn';
+        add.innerHTML = `<span class="ms msf" style="color:var(--s2);font-size:26px;">add</span><div class="sc-name">Add</div>`;
+        slot.appendChild(add);
+      }
+      track.appendChild(slot);
     }
-    function applyPage() { document.getElementById('sc-track').style.transform = `translateX(-${scPage * 100}%)`; }
-    function renderDots() { document.querySelectorAll('.sc-dot').forEach((d, i) => d.classList.toggle('active', i === scPage)); }
 
     document.getElementById('sc-viewport').addEventListener('wheel', (e) => {
       e.preventDefault();
-      const tp = totalPages();
-      if (e.deltaY > 0 || e.deltaX > 0) {
-        if (scPage < tp - 1) { scPage++; applyPage(); renderDots(); }
-      } else if (e.deltaY < 0 || e.deltaX < 0) {
-        if (scPage > 0) { scPage--; applyPage(); renderDots(); }
-      }
+      document.getElementById('sc-viewport').scrollBy({ left: e.deltaY + e.deltaX, behavior: 'auto' });
     }, { passive: false });
 
     document.getElementById('editBtn').addEventListener('click', () => {
@@ -1897,10 +1875,6 @@
       document.getElementById('editBtn').querySelector('.ms').textContent = editMode ? 'check' : 'edit';
       renderShortcuts();
       if (editMode) {
-        const tp = totalPages();
-        scPage = tp - 1;
-        applyPage();
-        renderDots();
         document.getElementById('sc-viewport').scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
@@ -2522,9 +2496,8 @@
     document.getElementById('tileSizeSlider').value = tileColumns;
     document.getElementById('tileSizeSlider').addEventListener('input', e => {
       tileColumns = parseInt(e.target.value);
-      document.documentElement.style.setProperty('--tile-cols', tileColumns);
-      PER_PAGE = tileColumns * 2;
       saveTileColumns();
+      applyTileWidth();
       renderShortcuts();
     });
 
@@ -3088,7 +3061,7 @@
       tileRadius = DEFAULT_RADIUS; saveRadius();
       borderAmt = DEFAULT_BORDER; saveBorder();
       tileOpacity = 55; applyTileStyle(); saveTileOpacity(); document.getElementById('tileOpacitySlider').value = 55;
-      tileColumns = 6; document.documentElement.style.setProperty('--tile-cols', 6); saveTileColumns(); document.getElementById('tileSizeSlider').value = 6;
+      tileColumns = 6; applyTileWidth(); saveTileColumns(); document.getElementById('tileSizeSlider').value = 6;
       brightAmt = 80; saveBright();
       bgStyle = DEFAULT_BG; saveBg();
       bgUrl = ''; saveBgUrl();
