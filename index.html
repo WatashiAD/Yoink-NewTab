@@ -1876,6 +1876,12 @@
       renderShortcuts();
       if (editMode) {
         document.getElementById('sc-viewport').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+          const addBtn = document.querySelector('.sc-add-btn');
+          if (addBtn) {
+            addBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+          }
+        }, 100);
       }
     });
 
