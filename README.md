@@ -40,6 +40,9 @@
 - **Shortcut Manager** — Pin your favorite sites with custom icons and colors
 - **Pagination** — Supports multiple pages of shortcuts with dot navigation
 - **Edit Mode** — Reorder, edit, or remove shortcuts with a visual grid
+- **Drag & Drop** — Drag tiles to reorder them in edit mode
+- **Click to Edit** — Click any tile in edit mode to open the settings pane with pre-filled data
+- **Same-tab Links** — All shortcuts open in the current tab, no new windows
 
 ### Customization
 - **Accent Color** — Full-spectrum color picker with swatch presets
@@ -114,6 +117,7 @@ Access the settings pane by clicking the **settings** icon in the top-right corn
 | **Vignette** | Radial darkening around edges |
 | **Tile Roundness** | Border radius of all UI cards |
 | **Border Opacity** | Visibility of tile borders |
+| **Tile Size** | Adjustable grid columns (3–10) — larger values fit more tiles per row |
 | **Background Style** | Solid color, gradient, wave shader, or custom image/video |
 | **24-Hour Clock** | Toggle between 12h and 24h time format |
 | **Show Seconds** | Toggle seconds display on the clock |

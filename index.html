@@ -590,7 +590,7 @@
       flex-shrink: 0;
       width: 100%;
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(var(--tile-cols, 6), 1fr);
       gap: 14px;
       padding: 10px;
     }
@@ -651,6 +651,16 @@
       will-change: transform;
     }
 
+    .shortcut.dragging {
+      opacity: 0.3;
+      transform: scale(0.95) !important;
+    }
+
+    .shortcut.drag-over {
+      border-color: var(--acc) !important;
+      box-shadow: 0 0 0 2px var(--acc), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    }
+
     .sc-icon {
       width: clamp(40px, 8vw, 52px);
       height: clamp(40px, 8vw, 52px);
@@ -670,10 +680,6 @@
     .sc-add-btn:hover {
       background: var(--tile-hover) !important;
       background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='20' ry='20' stroke='%23585b70' stroke-width='2' stroke-dasharray='6%2c 6' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e") !important;
-    }
-      font-size: 26px;
-      line-height: 1;
-      display: block;
     }
 
     .sc-icon svg {
@@ -1467,11 +1473,11 @@
     </div>
 
     <div class="footer animate-item">
-      <a href="https://mail.google.com" class="flink" target="_blank"><span class="ms">mail</span>Gmail</a>
-      <a href="https://calendar.google.com" class="flink" target="_blank"><span
+      <a href="https://mail.google.com" class="flink" ><span class="ms">mail</span>Gmail</a>
+      <a href="https://calendar.google.com" class="flink" ><span
           class="ms">calendar_today</span>Calendar</a>
-      <a href="https://drive.google.com" class="flink" target="_blank"><span class="ms">folder</span>Drive</a>
-      <a href="https://maps.google.com" class="flink" target="_blank"><span class="ms">map</span>Maps</a>
+      <a href="https://drive.google.com" class="flink" ><span class="ms">folder</span>Drive</a>
+      <a href="https://maps.google.com" class="flink" ><span class="ms">map</span>Maps</a>
     </div>
     </div>
   </div>
@@ -1529,6 +1535,13 @@
       <div class="setting-label">Tile Opacity</div>
       <input type="range" id="tileOpacitySlider" min="10" max="90" value="55" style="width:100%;accent-color:var(--acc);">
       <div class="slider-labels"><span>Light</span><span>Opaque</span></div>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-label">Tile Size</div>
+      <input type="range" id="tileSizeSlider" min="3" max="10" value="6" step="1"
+        style="width:100%;accent-color:var(--acc);">
+      <div class="slider-labels"><span>Large</span><span>Small</span></div>
     </div>
 
     <div class="setting-item">
@@ -1694,6 +1707,7 @@
     let borderAmt = getInt('nt-border', DEFAULT_BORDER);
     let borderWidth = getInt('nt-border-w', DEFAULT_BORDER_WIDTH);
     let tileOpacity = getInt('nt-tile-op', 55);
+    let tileColumns = getInt('nt-tile-cols', 6);
     let bgStyle = localStorage.getItem('nt-bg') || DEFAULT_BG;
     let bgUrl = localStorage.getItem('nt-bg-url') || '';
     let wallpapers = [];
@@ -1734,6 +1748,7 @@
     function saveBright() { localStorage.setItem('nt-bright', brightAmt); }
     function saveVignette() { localStorage.setItem('nt-vignette', vignetteAmt); }
     function saveTileOpacity() { localStorage.setItem('nt-tile-op', tileOpacity); }
+    function saveTileColumns() { localStorage.setItem('nt-tile-cols', tileColumns); }
     function applyTileStyle() {
       const op = tileOpacity / 100;
       document.documentElement.style.setProperty('--tile-bg', `rgba(30,30,46,${op})`);
@@ -1751,6 +1766,7 @@
     document.documentElement.style.setProperty('--blur-amount', blurAmt + 'px');
     document.documentElement.style.setProperty('--bg-url', bgUrl ? `url(${bgUrl})` : 'none');
     document.documentElement.style.setProperty('--tile-radius', tileRadius + 'px');
+    document.documentElement.style.setProperty('--tile-cols', tileColumns);
     document.documentElement.style.setProperty('--glass-border', `rgba(205, 214, 244, ${borderAmt / 100})`);
     applyTileStyle();
     if (document.getElementById('bg-vignette')) {
@@ -1806,7 +1822,7 @@
     applyWeatherPomo();
     setTimeout(() => { tick(); updatePomoDisplay(); applyWeatherPomo(); }, 100);
 
-    const PER_PAGE = 6;
+    let PER_PAGE = tileColumns * 2;
     let editMode = false, scPage = 0, selIcon = ICONS[0], editingIdx = null;
 
     function totalPages() { return Math.max(1, Math.ceil((shortcuts.length + (editMode ? 1 : 0)) / PER_PAGE)); }
@@ -1826,8 +1842,22 @@
           const a = document.createElement('a');
           a.className = 'shortcut sc-enter';
           a.style.animationDelay = `${(i % PER_PAGE) * 0.05}s`;
-          if (!editMode) { a.href = s.url; a.target = '_blank'; }
-           else { a.addEventListener('click', ev => { if (ev.target.closest('.sc-del')) return; ev.preventDefault(); ev.stopPropagation(); editingIdx = i; selIcon = s.customIcon ? { i: 'custom', customIcon: s.customIcon, c: s.color } : ICONS.find(ic => ic.i === s.icon) || ICONS[0]; openModal(s); }); }
+          a.dataset.idx = i;
+          if (!editMode) { a.href = s.url; }
+          if (editMode) {
+            a.draggable = true;
+            a.style.position = 'relative';
+            a.addEventListener('click', (function (i, sc) {
+              return function (e) {
+                if (e.target.closest('.sc-del')) return;
+                e.preventDefault();
+                e.stopPropagation();
+                editingIdx = i;
+                selIcon = sc.customIcon ? { i: 'custom', customIcon: sc.customIcon, c: sc.color } : ICONS.find(ic => ic.i === sc.icon) || ICONS[0];
+                openModal(sc);
+              };
+            })(i, s));
+          }
           const iclr = syncShortcuts ? 'var(--acc)' : s.color;
           const ibg = syncShortcuts ? 'color-mix(in srgb, var(--acc) 15%, transparent)' : `${s.color}22`;
           a.innerHTML = `<div class="sc-icon" style="background:${ibg}">${s.icon === 'custom' && s.customIcon ? '<div style="width:26px;height:26px;color:' + iclr + '">' + s.customIcon + '</div>' : '<span class="ms msf" style="color:' + iclr + '">' + s.icon + '</span>'}</div><div class="sc-name">${s.name}</div>${editMode ? '<span class="ms sc-del" data-idx="' + i + '">close</span>' : ''}`;
@@ -1967,7 +1997,6 @@
         const sc = e.target.closest('.shortcut');
         const idx = parseInt(e.target.dataset.idx);
 
-        // Pixel Destroy Animation
         const rect = sc.getBoundingClientRect();
         const color = shortcuts[idx].color || '#ffffff';
         for (let i = 0; i < 20; i++) {
@@ -1998,7 +2027,66 @@
           saveShortcuts();
           renderShortcuts();
         }, 300);
+        return;
       }
+
+      const sc = e.target.closest('.shortcut');
+      if (sc && editMode) {
+        e.preventDefault();
+        const idx = parseInt(sc.dataset.idx);
+        editingIdx = idx;
+        const s = shortcuts[idx];
+        selIcon = s.customIcon ? { i: 'custom', customIcon: s.customIcon, c: s.color } : ICONS.find(ic => ic.i === s.icon) || ICONS[0];
+        openModal(s);
+      }
+    });
+
+    let dragSrcIdx = null;
+    document.getElementById('sc-track').addEventListener('dragstart', e => {
+      const sc = e.target.closest('.shortcut');
+      if (!sc || !editMode) { e.preventDefault(); return; }
+      dragSrcIdx = parseInt(sc.dataset.idx);
+      sc.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragSrcIdx);
+    });
+
+    document.getElementById('sc-track').addEventListener('dragend', e => {
+      document.querySelectorAll('.shortcut.dragging, .shortcut.drag-over').forEach(el => {
+        el.classList.remove('dragging', 'drag-over');
+      });
+      dragSrcIdx = null;
+    });
+
+    document.getElementById('sc-track').addEventListener('dragover', e => {
+      if (!editMode || dragSrcIdx === null) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const sc = e.target.closest('.shortcut');
+      if (sc) {
+        document.querySelectorAll('.shortcut.drag-over').forEach(el => el.classList.remove('drag-over'));
+        const overIdx = parseInt(sc.dataset.idx);
+        if (overIdx !== dragSrcIdx) sc.classList.add('drag-over');
+      }
+    });
+
+    document.getElementById('sc-track').addEventListener('dragleave', e => {
+      const sc = e.target.closest('.shortcut');
+      if (sc) sc.classList.remove('drag-over');
+    });
+
+    document.getElementById('sc-track').addEventListener('drop', e => {
+      e.preventDefault();
+      if (!editMode || dragSrcIdx === null) return;
+      const sc = e.target.closest('.shortcut');
+      if (!sc) return;
+      const overIdx = parseInt(sc.dataset.idx);
+      if (overIdx === dragSrcIdx) return;
+
+      const item = shortcuts.splice(dragSrcIdx, 1)[0];
+      shortcuts.splice(overIdx, 0, item);
+      saveShortcuts();
+      renderShortcuts();
     });
 
 
@@ -2369,10 +2457,24 @@
       settingsPane.classList.toggle('open');
     });
 
-    closeSettings.addEventListener('click', () => settingsPane.classList.remove('open'));
+    closeSettings.addEventListener('click', () => {
+      if (editMode) {
+        editMode = false;
+        document.getElementById('editLbl').textContent = 'Edit';
+        document.getElementById('editBtn').querySelector('.ms').textContent = 'edit';
+        renderShortcuts();
+      }
+      settingsPane.classList.remove('open');
+    });
 
     document.addEventListener('click', (e) => {
       if (!settingsPane.contains(e.target) && e.target !== settingsBtn && settingsPane.classList.contains('open')) {
+        if (editMode) {
+          editMode = false;
+          document.getElementById('editLbl').textContent = 'Edit';
+          document.getElementById('editBtn').querySelector('.ms').textContent = 'edit';
+          renderShortcuts();
+        }
         settingsPane.classList.remove('open');
       }
     });
@@ -2415,6 +2517,15 @@
       tileOpacity = parseInt(e.target.value);
       applyTileStyle();
       saveTileOpacity();
+    });
+
+    document.getElementById('tileSizeSlider').value = tileColumns;
+    document.getElementById('tileSizeSlider').addEventListener('input', e => {
+      tileColumns = parseInt(e.target.value);
+      document.documentElement.style.setProperty('--tile-cols', tileColumns);
+      PER_PAGE = tileColumns * 2;
+      saveTileColumns();
+      renderShortcuts();
     });
 
     document.getElementById('blurSlider').value = blurAmt;
@@ -2977,6 +3088,7 @@
       tileRadius = DEFAULT_RADIUS; saveRadius();
       borderAmt = DEFAULT_BORDER; saveBorder();
       tileOpacity = 55; applyTileStyle(); saveTileOpacity(); document.getElementById('tileOpacitySlider').value = 55;
+      tileColumns = 6; document.documentElement.style.setProperty('--tile-cols', 6); saveTileColumns(); document.getElementById('tileSizeSlider').value = 6;
       brightAmt = 80; saveBright();
       bgStyle = DEFAULT_BG; saveBg();
       bgUrl = ''; saveBgUrl();
